@@ -4,7 +4,7 @@ import {
   H2, H3, Text, Label, Pill, Button, Stat,
   Card, CardHeader, CardBody, DataTable,
   Field, Input, Sel, Toggle, CheckBox,
-  Alert, Timeline,
+  Alert, Timeline, Avatar, ProductCard, SectionLabel,
 } from './ui.jsx'
 import {
   ScreenEnrollmentOverview,
@@ -40,41 +40,51 @@ const SCREEN_LABELS = {
   'enrollment-documents': 'Documenti',
   'enrollment-detail': 'Le mie iscrizioni',
   'enrollment-confirmation': 'Conferma',
+  promotions: 'Offerte & Store',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
-  { name: 'Marco', surname: 'Rossi', school: 'Sc. Primaria G. Verdi', cls: '3ª A', age: 8 },
-  { name: 'Sofia', surname: 'Rossi', school: 'Sc. Infanzia Arcobaleno', cls: 'Sez. B', age: 5 },
+  { name: 'Marco',  surname: 'Rossi',   school: 'Sc. Primaria G. Verdi',      cls: '4ª A',    age: 8,  color: '#3b82f6', enrollStatus: 'In attesa firme', enrollYear: '2025/2026' },
+  { name: 'Sofia',  surname: 'Rossi',   school: 'Sc. Infanzia Arcobaleno',    cls: 'Sez. B',  age: 5,  color: '#e879a8', enrollStatus: 'Confermata',       enrollYear: '2025/2026' },
+  { name: 'Giulia', surname: 'Bianchi', school: 'Sc. Media L. da Vinci',      cls: '1ª B',    age: 12, color: '#8b5cf6', enrollStatus: 'Bozza',            enrollYear: '2025/2026' },
 ]
 
+const CHILD_COLOR = { Marco: '#3b82f6', Sofia: '#e879a8', Giulia: '#8b5cf6' }
+
 const PAYMENTS_DATA = [
-  { id: 'p1', date: '15 apr 2025', desc: 'Mensa scolastica – Aprile', child: 'Marco', amount: '€ 78,00', status: 'Completato' },
-  { id: 'p2', date: '10 apr 2025', desc: 'Gita scolastica – Firenze', child: 'Marco', amount: '€ 25,00', status: 'Completato' },
-  { id: 'p3', date: '01 apr 2025', desc: 'Materiale didattico', child: 'Sofia', amount: '€ 45,50', status: 'Completato' },
-  { id: 'p4', date: '15 mar 2025', desc: 'Mensa scolastica – Marzo', child: 'Marco', amount: '€ 78,00', status: 'Completato' },
-  { id: 'p5', date: '05 mar 2025', desc: 'Contributo volontario', child: 'Sofia', amount: '€ 30,00', status: 'In attesa' },
-  { id: 'p6', date: '12 feb 2025', desc: 'Laboratorio di musica', child: 'Marco', amount: '€ 60,00', status: 'Completato' },
+  { id: 'p1', date: '15 apr 2025', desc: 'Mensa scolastica – Aprile',       child: 'Marco',  amount: '€ 78,00',  status: 'Completato' },
+  { id: 'p2', date: '10 apr 2025', desc: 'Gita scolastica – Firenze',       child: 'Marco',  amount: '€ 25,00',  status: 'Completato' },
+  { id: 'p3', date: '01 apr 2025', desc: 'Materiale didattico Sez. B',      child: 'Sofia',  amount: '€ 45,50',  status: 'Completato' },
+  { id: 'p4', date: '15 mar 2025', desc: 'Mensa scolastica – Marzo',        child: 'Marco',  amount: '€ 78,00',  status: 'Completato' },
+  { id: 'p5', date: '05 mar 2025', desc: 'Contributo volontario',           child: 'Sofia',  amount: '€ 30,00',  status: 'In attesa' },
+  { id: 'p6', date: '12 feb 2025', desc: 'Laboratorio di musica',           child: 'Marco',  amount: '€ 60,00',  status: 'Completato' },
+  { id: 'p7', date: '28 mar 2025', desc: 'Libri di testo 1ª media',         child: 'Giulia', amount: '€ 145,00', status: 'Completato' },
+  { id: 'p8', date: '10 mar 2025', desc: 'Contributo iscrizione',           child: 'Giulia', amount: '€ 180,00', status: 'Completato' },
+  { id: 'p9', date: '02 apr 2025', desc: 'Attività extrascolastica – Teatro', child: 'Giulia', amount: '€ 55,00', status: 'In attesa' },
 ]
 
 const ORDERS_DATA = [
-  { num: '#2847', date: '12 apr 2025', items: 'Kit materiale 3ª A (×1)', total: '€ 42,90', status: 'Consegnato' },
-  { num: '#2651', date: '02 feb 2025', items: 'Felpa scuola (×2)', total: '€ 58,00', status: 'Consegnato' },
-  { num: '#2589', date: '15 gen 2025', items: 'Diario scolastico (×1)', total: '€ 14,50', status: 'Consegnato' },
-  { num: '#2401', date: '10 set 2024', items: 'Zaino scuola (×1)', total: '€ 75,00', status: 'Consegnato' },
+  { num: '#2847', date: '12 apr 2025', items: 'Kit materiale 4ª A (×1)',    child: 'Marco',  total: '€ 42,90', status: 'Consegnato' },
+  { num: '#2844', date: '10 apr 2025', items: 'Felpa scuola G. Verdi (×1)', child: 'Marco',  total: '€ 28,00', status: 'In elaborazione' },
+  { num: '#2839', date: '05 apr 2025', items: 'Set colori Sez. B (×1)',     child: 'Sofia',  total: '€ 14,90', status: 'Consegnato' },
+  { num: '#2821', date: '28 mar 2025', items: 'Zaino media (×1)',           child: 'Giulia', total: '€ 59,90', status: 'Consegnato' },
+  { num: '#2651', date: '02 feb 2025', items: 'Felpa scuola (×2)',          child: 'Marco',  total: '€ 58,00', status: 'Consegnato' },
+  { num: '#2589', date: '15 gen 2025', items: 'Diario scolastico (×1)',     child: 'Marco',  total: '€ 14,50', status: 'Consegnato' },
 ]
 
 const SIDEBAR_ITEMS = [
-  { id: 'dashboard', label: 'Home' },
-  { id: 'child-detail', label: 'I miei figli' },
+  { id: 'dashboard',       label: 'Home' },
+  { id: 'child-detail',    label: 'I miei figli' },
   { id: 'enrollment-detail', label: 'Iscrizioni' },
-  { id: 'payments', label: 'Pagamenti' },
-  { id: 'orders', label: 'Ordini' },
-  { id: 'child-detail', label: 'Documenti' },
-  { id: 'signup', label: 'Profilo e sicurezza' },
+  { id: 'payments',        label: 'Pagamenti' },
+  { id: 'orders',          label: 'Ordini' },
+  { id: 'promotions',      label: 'Offerte & Store' },
+  { id: 'child-detail',    label: 'Documenti' },
+  { id: 'signup',          label: 'Profilo e sicurezza' },
 ]
 
 function statusTone(s) {
@@ -357,100 +367,163 @@ function ScreenAddChild({ goTo }) {
 
 function ScreenDashboard({ goTo }) {
   return (
-    <Stack gap={20}>
-      <Stack gap={2}>
-        <H2>Buongiorno, Maria</H2>
-        <Text tone="tertiary" size="small">Lunedì 20 aprile 2025</Text>
-      </Stack>
-
-      {/* Notification banners */}
-      <Stack gap={8}>
-        <Alert
-          type="warning"
-          title="Firma mancante — Iscrizione Marco Rossi A.S. 2025/2026"
-          description="Luca Rossi (Padre) non ha ancora firmato il contratto di iscrizione. La pratica è bloccata."
-          action="Gestisci firme"
-          onAction={() => goTo('enrollment-signatures')}
-        />
-        <Alert
-          type="info"
-          title="Documento mancante — Certificato vaccinazioni"
-          description="La scuola richiede il certificato vaccinazioni di Marco Rossi per completare la pratica."
-          action="Carica ora"
-          onAction={() => goTo('enrollment-documents')}
-        />
-      </Stack>
-
-      <Grid columns={4} gap={12}>
-        <Stat value="4" label="Ordini totali" />
-        <Stat value="7" label="Pagamenti" tone="success" />
-        <Stat value="3" label="Documenti" tone="info" />
-        <Stat value="1" label="Iscrizione attiva" tone="warning" />
-      </Grid>
-      <Divider />
-      <Grid columns="1fr 1fr" gap={24} style={{ alignItems: 'start' }}>
-        <Stack gap={14}>
-          <Row gap={8}>
-            <H3>I miei figli</H3>
-            <Spacer />
-            <Button variant="ghost" onClick={() => goTo('add-child')}>+ Aggiungi</Button>
-          </Row>
-          {CHILDREN_DATA.map(child => (
-            <Card key={child.name}>
-              <CardHeader trailing={<Pill tone="success" active size="sm">Attivo</Pill>}>
-                {child.name} {child.surname}
-              </CardHeader>
-              <CardBody>
-                <Stack gap={10}>
-                  <Text tone="secondary" size="small">{child.school}</Text>
-                  <Row gap={6} style={{ flexWrap: 'wrap' }}>
-                    <Pill size="sm">{child.cls}</Pill>
-                    <Pill size="sm">A.S. 2024/2025</Pill>
-                    <Pill size="sm">{child.age} anni</Pill>
-                  </Row>
-                  <Row gap={16}>
-                    <Text tone="tertiary" size="small">2 pagamenti recenti</Text>
-                    <Text tone="tertiary" size="small">1 ordine</Text>
-                  </Row>
-                  <Button variant="ghost" onClick={() => goTo('child-detail')}>Vedi dettaglio →</Button>
-                </Stack>
-              </CardBody>
-            </Card>
-          ))}
+    <Stack gap={24}>
+      {/* Header */}
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Stack gap={3}>
+          <H2>Buongiorno, Maria</H2>
+          <Text tone="secondary" size="small">Lunedì 20 aprile 2025 · 3 figli collegati</Text>
         </Stack>
-        <Stack gap={14}>
+        <Button variant="secondary" onClick={() => goTo('promotions')}>Offerte & Store</Button>
+      </Row>
+
+      {/* Alerts */}
+      <Stack gap={8}>
+        <Alert type="warning"
+          title="Firma mancante — Iscrizione Marco Rossi A.S. 2025/2026"
+          description="Luca Rossi (Padre) non ha ancora firmato. La pratica è in attesa."
+          action="Gestisci firme" onAction={() => goTo('enrollment-signatures')} />
+        <Alert type="info"
+          title="Iscrizione Giulia Bianchi in bozza"
+          description="Hai iniziato l'iscrizione alla Sc. Media L. da Vinci ma non l'hai ancora inviata."
+          action="Completa" onAction={() => goTo('enrollment-data')} />
+      </Stack>
+
+      {/* Stats */}
+      <Grid columns={4} gap={12}>
+        <Stat value="6"  label="Ordini totali" />
+        <Stat value="9"  label="Pagamenti" tone="success" />
+        <Stat value="5"  label="Documenti" tone="info" />
+        <Stat value="3"  label="Iscrizioni attive" tone="warning" />
+      </Grid>
+
+      <Divider />
+
+      {/* Children */}
+      <Stack gap={12}>
+        <Row gap={8}>
+          <SectionLabel>I MIEI FIGLI</SectionLabel>
+          <Spacer />
+          <Button variant="ghost" onClick={() => goTo('add-child')}>+ Aggiungi figlio</Button>
+        </Row>
+        <Grid columns={3} gap={14}>
+          {CHILDREN_DATA.map(child => {
+            const enrollTone = child.enrollStatus === 'Confermata' ? 'success' : child.enrollStatus === 'Bozza' ? 'neutral' : 'warning'
+            const pays = PAYMENTS_DATA.filter(p => p.child === child.name)
+            const ords = ORDERS_DATA.filter(o => o.child === child.name)
+            return (
+              <Card key={child.name} accent={child.color}>
+                <CardBody>
+                  <Stack gap={12}>
+                    <Row gap={10} style={{ alignItems: 'flex-start' }}>
+                      <Avatar name={`${child.name} ${child.surname}`} color={child.color} size={38} />
+                      <Stack gap={3} style={{ flex: 1, minWidth: 0 }}>
+                        <Text style={{ fontWeight: 700, fontSize: 14 }}>{child.name} {child.surname}</Text>
+                        <Text size="small" tone="secondary" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {child.school}
+                        </Text>
+                      </Stack>
+                    </Row>
+                    <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                      <Pill size="sm">{child.cls}</Pill>
+                      <Pill size="sm">{child.age} anni</Pill>
+                    </Row>
+                    <div style={{ padding: '8px 10px', background: C.fill, borderRadius: 7 }}>
+                      <Row gap={6} style={{ justifyContent: 'space-between' }}>
+                        <Text size="small" tone="secondary">Iscrizione {child.enrollYear}</Text>
+                        <Pill size="sm" tone={enrollTone} active>{child.enrollStatus}</Pill>
+                      </Row>
+                    </div>
+                    <Grid columns={2} gap={8}>
+                      <div style={{ textAlign: 'center', padding: '8px 4px', background: C.fill, borderRadius: 6 }}>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: child.color }}>{pays.length}</div>
+                        <div style={{ fontSize: 11, color: C.textSec, marginTop: 2 }}>pagamenti</div>
+                      </div>
+                      <div style={{ textAlign: 'center', padding: '8px 4px', background: C.fill, borderRadius: 6 }}>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: child.color }}>{ords.length}</div>
+                        <div style={{ fontSize: 11, color: C.textSec, marginTop: 2 }}>ordini</div>
+                      </div>
+                    </Grid>
+                    <Button variant="ghost" style={{ width: '100%', textAlign: 'center' }} onClick={() => goTo('child-detail')}>
+                      Vedi dettaglio →
+                    </Button>
+                  </Stack>
+                </CardBody>
+              </Card>
+            )
+          })}
+        </Grid>
+      </Stack>
+
+      <Divider />
+
+      <Grid columns="1fr 1fr" gap={24} style={{ alignItems: 'start' }}>
+        {/* Recent payments */}
+        <Stack gap={12}>
           <Row gap={8}>
-            <H3>Pagamenti recenti</H3>
+            <SectionLabel>PAGAMENTI RECENTI</SectionLabel>
             <Spacer />
             <Button variant="ghost" onClick={() => goTo('payments')}>Vedi tutti →</Button>
           </Row>
           <DataTable
-            headers={['Data', 'Descrizione', 'Importo', 'Stato']}
-            rows={PAYMENTS_DATA.slice(0, 3).map(p => [
-              p.date, p.desc, p.amount,
+            headers={['Data', 'Figlio', 'Importo', 'Stato']}
+            rows={PAYMENTS_DATA.slice(0, 5).map(p => [
+              <span key={p.id + 'd'} style={{ color: C.textSec, fontSize: 12 }}>{p.date}</span>,
+              <Row key={p.id + 'c'} gap={6}>
+                <Avatar name={p.child} color={CHILD_COLOR[p.child]} size={20} />
+                <Text size="small">{p.child}</Text>
+              </Row>,
+              <span key={p.id + 'a'} style={{ fontWeight: 600 }}>{p.amount}</span>,
               <Pill key={p.id} size="sm" tone={statusTone(p.status)} active>{p.status}</Pill>,
             ])}
           />
-          <Divider />
-          <H3>Iscrizioni attive</H3>
-          <Card>
-            <CardHeader trailing={<Pill tone="warning" active size="sm">In attesa firme</Pill>}>
-              Iscrizione A.S. 2025/2026
-            </CardHeader>
-            <CardBody>
-              <Stack gap={8}>
-                <Text size="small">Scuola Primaria G. Verdi — Marco Rossi</Text>
-                <Text tone="secondary" size="small">Avviata il 18 apr 2025. In attesa della firma di Luca Rossi.</Text>
-                <Row gap={6} style={{ flexWrap: 'wrap' }}>
-                  <Pill size="sm" tone="success" active>Dati ✓</Pill>
-                  <Pill size="sm" tone="warning" active>Firme 1/2</Pill>
-                  <Pill size="sm" tone="neutral">Pagamento</Pill>
-                  <Pill size="sm" tone="neutral">Documenti 2/4</Pill>
-                </Row>
-                <Button variant="secondary" onClick={() => goTo('enrollment-overview')}>Apri pratica →</Button>
-              </Stack>
-            </CardBody>
-          </Card>
+        </Stack>
+
+        {/* Enrollments + recent orders */}
+        <Stack gap={12}>
+          <SectionLabel>ISCRIZIONI A.S. 2025/2026</SectionLabel>
+          <Stack gap={8}>
+            {CHILDREN_DATA.map(child => {
+              const tone = child.enrollStatus === 'Confermata' ? 'success' : child.enrollStatus === 'Bozza' ? 'neutral' : 'warning'
+              return (
+                <Card key={child.name} accent={child.color}>
+                  <CardBody style={{ padding: '10px 14px' }}>
+                    <Row gap={10} style={{ justifyContent: 'space-between' }}>
+                      <Row gap={8}>
+                        <Avatar name={`${child.name} ${child.surname}`} color={child.color} size={28} />
+                        <Stack gap={2}>
+                          <Text style={{ fontWeight: 600, fontSize: 13 }}>{child.name} {child.surname}</Text>
+                          <Text size="small" tone="secondary">{child.school}</Text>
+                        </Stack>
+                      </Row>
+                      <Row gap={8}>
+                        <Pill size="sm" tone={tone} active>{child.enrollStatus}</Pill>
+                        <Button variant="ghost" onClick={() => goTo('enrollment-overview')}>→</Button>
+                      </Row>
+                    </Row>
+                  </CardBody>
+                </Card>
+              )
+            })}
+          </Stack>
+
+          <Row gap={8} style={{ marginTop: 4 }}>
+            <SectionLabel>ULTIMI ORDINI</SectionLabel>
+            <Spacer />
+            <Button variant="ghost" onClick={() => goTo('orders')}>Vedi tutti →</Button>
+          </Row>
+          <DataTable
+            headers={['Ordine', 'Figlio', 'Totale', 'Stato']}
+            rows={ORDERS_DATA.slice(0, 3).map(o => [
+              <span key={o.num + 'n'} style={{ fontWeight: 600, fontSize: 12 }}>{o.num}</span>,
+              <Row key={o.num + 'c'} gap={6}>
+                <Avatar name={o.child} color={CHILD_COLOR[o.child]} size={20} />
+                <Text size="small">{o.child}</Text>
+              </Row>,
+              <span key={o.num + 't'} style={{ fontWeight: 600 }}>{o.total}</span>,
+              <Pill key={o.num} size="sm" tone={statusTone(o.status)} active>{o.status}</Pill>,
+            ])}
+          />
         </Stack>
       </Grid>
     </Stack>
@@ -458,24 +531,66 @@ function ScreenDashboard({ goTo }) {
 }
 
 function ScreenChildDetail({ goTo }) {
-  const marco = PAYMENTS_DATA.filter(p => p.child === 'Marco')
+  const [selected, setSelected] = useState('Marco')
+  const child = CHILDREN_DATA.find(c => c.name === selected) || CHILDREN_DATA[0]
+  const payments = PAYMENTS_DATA.filter(p => p.child === selected)
+  const orders = ORDERS_DATA.filter(o => o.child === selected)
+
+  const enrollTone = child.enrollStatus === 'Confermata' ? 'success' : child.enrollStatus === 'Bozza' ? 'neutral' : 'warning'
+
   return (
     <Stack gap={20}>
-      <Row gap={14} style={{ alignItems: 'flex-start' }}>
-        <Stack gap={3} style={{ flex: 1 }}>
-          <H2>Marco Rossi</H2>
-          <Text tone="secondary" size="small">Sc. Primaria G. Verdi · 3ª A · A.S. 2024/2025</Text>
-        </Stack>
-        <Button variant="secondary">Modifica</Button>
-      </Row>
-      <Row gap={6} style={{ flexWrap: 'wrap' }}>
-        <Pill tone="success" active size="sm">Attivo</Pill>
-        <Pill size="sm">8 anni</Pill>
-        <Pill size="sm">Relazione: Madre</Pill>
-      </Row>
+      {/* Child switcher */}
+      <Stack gap={10}>
+        <SectionLabel>SELEZIONA FIGLIO</SectionLabel>
+        <Row gap={10} style={{ flexWrap: 'wrap' }}>
+          {CHILDREN_DATA.map(c => (
+            <div
+              key={c.name}
+              onClick={() => setSelected(c.name)}
+              style={{
+                padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+                border: `1.5px solid ${selected === c.name ? c.color : C.border}`,
+                background: selected === c.name ? `${c.color}12` : C.bgRaised,
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+            >
+              <Avatar name={`${c.name} ${c.surname}`} color={c.color} size={28} />
+              <Stack gap={1}>
+                <Text style={{ fontWeight: selected === c.name ? 700 : 500, fontSize: 13, color: selected === c.name ? c.color : C.text }}>
+                  {c.name} {c.surname}
+                </Text>
+                <Text size="small" tone="tertiary">{c.cls} · {c.age} anni</Text>
+              </Stack>
+            </div>
+          ))}
+        </Row>
+      </Stack>
+
+      {/* Child header */}
+      <div style={{ padding: '18px 20px', background: C.bgRaised, borderRadius: 12, border: `1px solid ${C.border}`, borderLeft: `4px solid ${child.color}` }}>
+        <Row gap={14} style={{ justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          <Row gap={14}>
+            <Avatar name={`${child.name} ${child.surname}`} color={child.color} size={52} />
+            <Stack gap={4}>
+              <H2 style={{ color: child.color }}>{child.name} {child.surname}</H2>
+              <Text tone="secondary">{child.school}</Text>
+              <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                <Pill size="sm">{child.cls}</Pill>
+                <Pill size="sm">{child.age} anni</Pill>
+                <Pill size="sm">Relazione: Madre</Pill>
+                <Pill tone="success" active size="sm">Attivo</Pill>
+              </Row>
+            </Stack>
+          </Row>
+          <Button variant="secondary">Modifica</Button>
+        </Row>
+      </div>
+
       <Grid columns={3} gap={12}>
-        <Stat value="4" label="Pagamenti" tone="success" />
-        <Stat value="2" label="Ordini" tone="info" />
+        <Stat value={payments.length} label="Pagamenti" tone="success" />
+        <Stat value={orders.length} label="Ordini" tone="info" />
         <Stat value="2" label="Documenti" />
       </Grid>
 
@@ -483,31 +598,43 @@ function ScreenChildDetail({ goTo }) {
       <Divider />
       <Stack gap={8}>
         <Row gap={8}>
-          <H3>Iscrizione in corso</H3>
+          <H3>Iscrizione A.S. {child.enrollYear}</H3>
           <Spacer />
           <Button variant="ghost" onClick={() => goTo('enrollment-detail')}>Vedi tutte →</Button>
         </Row>
-        <Card style={{ border: `1px solid rgba(224,154,48,0.4)` }}>
-          <CardHeader trailing={<Pill size="sm" tone="warning" active>In attesa firme</Pill>}>
-            A.S. 2025/2026 — Sc. Primaria G. Verdi
+        <Card accent={child.color}>
+          <CardHeader trailing={<Pill size="sm" tone={enrollTone} active>{child.enrollStatus}</Pill>}>
+            {child.enrollYear} — {child.school}
           </CardHeader>
           <CardBody>
             <Stack gap={10}>
-              <Row gap={6} style={{ flexWrap: 'wrap' }}>
-                <Pill size="sm" tone="success" active>Dati ✓</Pill>
-                <Pill size="sm" tone="warning" active>Firme 1/2</Pill>
-                <Pill size="sm">Pagamento in attesa</Pill>
-                <Pill size="sm" tone="warning" active>Documenti 2/4</Pill>
-              </Row>
-              <Alert
-                type="warning"
-                title="Firma mancante"
-                description="Luca Rossi deve ancora firmare il contratto di iscrizione."
-              />
-              <Row gap={8}>
-                <Button variant="primary" onClick={() => goTo('enrollment-overview')}>Apri pratica</Button>
-                <Button variant="ghost" onClick={() => goTo('enrollment-signatures')}>Gestisci firme</Button>
-              </Row>
+              {child.enrollStatus === 'In attesa firme' && (
+                <>
+                  <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                    <Pill size="sm" tone="success" active>Dati ✓</Pill>
+                    <Pill size="sm" tone="warning" active>Firme 1/2</Pill>
+                    <Pill size="sm">Pagamento</Pill>
+                    <Pill size="sm" tone="warning" active>Documenti 2/4</Pill>
+                  </Row>
+                  <Alert type="warning" title="Firma mancante" description="Luca Rossi deve ancora firmare il contratto di iscrizione." />
+                  <Row gap={8}>
+                    <Button variant="primary" onClick={() => goTo('enrollment-overview')}>Apri pratica</Button>
+                    <Button variant="ghost" onClick={() => goTo('enrollment-signatures')}>Gestisci firme</Button>
+                  </Row>
+                </>
+              )}
+              {child.enrollStatus === 'Confermata' && (
+                <>
+                  <Alert type="success" title="Iscrizione confermata dalla segreteria" description={`${child.name} è ufficialmente iscritta per l'A.S. ${child.enrollYear}.`} />
+                  <Button variant="ghost">Vedi documenti →</Button>
+                </>
+              )}
+              {child.enrollStatus === 'Bozza' && (
+                <>
+                  <Alert type="info" title="Iscrizione in bozza" description="Hai salvato una bozza di iscrizione. Completala e inviala alla segreteria." />
+                  <Button variant="primary" onClick={() => goTo('enrollment-data')}>Completa iscrizione →</Button>
+                </>
+              )}
             </Stack>
           </CardBody>
         </Card>
@@ -558,75 +685,222 @@ function ScreenPayments() {
     (childFilter === 'Tutti' || p.child === childFilter) &&
     (statusFilter === 'Tutti' || p.status === statusFilter)
   )
+  const total = filtered.filter(p => p.status === 'Completato').reduce((sum, p) => {
+    const n = parseFloat(p.amount.replace('€ ', '').replace(',', '.'))
+    return sum + (isNaN(n) ? 0 : n)
+  }, 0)
   return (
     <Stack gap={20}>
-      <Stack gap={4}>
-        <H2>Pagamenti</H2>
-        <Text tone="secondary">Tutti i tuoi pagamenti ScuolaPay, filtrabili per figlio e stato.</Text>
-      </Stack>
-      <Grid columns={2} gap={16} style={{ alignItems: 'start' }}>
-        <Stack gap={6}>
-          <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px' }}>FIGLIO</Text>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Stack gap={4}>
+          <H2>Pagamenti</H2>
+          <Text tone="secondary">Tutti i pagamenti del tuo account, filtrabili per figlio e stato.</Text>
+        </Stack>
+        <Button variant="secondary">Esporta CSV</Button>
+      </Row>
+
+      <Grid columns={3} gap={12}>
+        <Stat value={PAYMENTS_DATA.length} label="Pagamenti totali" />
+        <Stat value={`€ ${total.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.')}`} label="Totale completati" tone="success" />
+        <Stat value={PAYMENTS_DATA.filter(p => p.status === 'In attesa').length} label="In attesa" tone="warning" />
+      </Grid>
+
+      <Row gap={16} style={{ flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <Stack gap={5}>
+          <SectionLabel>FIGLIO</SectionLabel>
           <Row gap={6} style={{ flexWrap: 'wrap' }}>
-            {['Tutti', 'Marco', 'Sofia'].map(f => (
+            {['Tutti', ...CHILDREN_DATA.map(c => c.name)].map(f => (
               <Pill key={f} active={childFilter === f} onClick={() => setChildFilter(f)}>{f}</Pill>
             ))}
           </Row>
         </Stack>
-        <Stack gap={6}>
-          <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px' }}>STATO</Text>
+        <Stack gap={5}>
+          <SectionLabel>STATO</SectionLabel>
           <Row gap={6} style={{ flexWrap: 'wrap' }}>
             {['Tutti', 'Completato', 'In attesa', 'Fallito'].map(f => (
               <Pill key={f} active={statusFilter === f} onClick={() => setStatusFilter(f)}>{f}</Pill>
             ))}
           </Row>
         </Stack>
-      </Grid>
+      </Row>
+
       <DataTable
         headers={['Data', 'Descrizione', 'Figlio', 'Importo', 'Stato', 'Ricevuta']}
         rows={filtered.map(p => [
-          p.date, p.desc, p.child, p.amount,
+          <span key={p.id + 'd'} style={{ color: C.textSec, fontSize: 12 }}>{p.date}</span>,
+          p.desc,
+          <Row key={p.id + 'c'} gap={6}>
+            <Avatar name={p.child} color={CHILD_COLOR[p.child]} size={20} />
+            <Text size="small">{p.child}</Text>
+          </Row>,
+          <span key={p.id + 'a'} style={{ fontWeight: 600 }}>{p.amount}</span>,
           <Pill key={p.id + 's'} size="sm" tone={statusTone(p.status)} active>{p.status}</Pill>,
           p.status === 'Completato'
-            ? <Button key={p.id + 'd'} variant="ghost">Scarica</Button>
-            : <span key={p.id + 'd'} style={{ color: C.textTer }}>—</span>,
+            ? <Button key={p.id + 'dl'} variant="ghost">Scarica</Button>
+            : <span key={p.id + 'dl'} style={{ color: C.textTer }}>—</span>,
         ])}
         emptyMessage="Nessun pagamento trovato per i filtri selezionati."
       />
-      <Row gap={8} style={{ justifyContent: 'space-between' }}>
-        <Text tone="secondary" size="small">{filtered.length} pagamenti trovati</Text>
-        <Button variant="secondary">Esporta CSV</Button>
-      </Row>
+      <Text tone="tertiary" size="small">{filtered.length} risultati</Text>
     </Stack>
   )
 }
 
 function ScreenOrders() {
-  const [filter, setFilter] = useState('Tutti')
-  const filtered = ORDERS_DATA.filter(o => filter === 'Tutti' || o.status === filter)
+  const [childFilter, setChildFilter] = useState('Tutti')
+  const [statusFilter, setStatusFilter] = useState('Tutti')
+  const filtered = ORDERS_DATA.filter(o =>
+    (childFilter === 'Tutti' || o.child === childFilter) &&
+    (statusFilter === 'Tutti' || o.status === statusFilter)
+  )
   return (
     <Stack gap={20}>
-      <Stack gap={4}>
-        <H2>Ordini</H2>
-        <Text tone="secondary">I tuoi ordini dallo store ScuolaPay.</Text>
-      </Stack>
-      <Stack gap={6}>
-        <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px' }}>STATO</Text>
-        <Row gap={6} style={{ flexWrap: 'wrap' }}>
-          {['Tutti', 'In elaborazione', 'Consegnato', 'Annullato'].map(f => (
-            <Pill key={f} active={filter === f} onClick={() => setFilter(f)}>{f}</Pill>
-          ))}
-        </Row>
-      </Stack>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Stack gap={4}>
+          <H2>Ordini</H2>
+          <Text tone="secondary">I tuoi ordini dallo store ScuolaPay.</Text>
+        </Stack>
+        <Button variant="primary" onClick={() => {}}>Vai allo store →</Button>
+      </Row>
+
+      <Row gap={16} style={{ flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <Stack gap={5}>
+          <SectionLabel>FIGLIO</SectionLabel>
+          <Row gap={6} style={{ flexWrap: 'wrap' }}>
+            {['Tutti', ...CHILDREN_DATA.map(c => c.name)].map(f => (
+              <Pill key={f} active={childFilter === f} onClick={() => setChildFilter(f)}>{f}</Pill>
+            ))}
+          </Row>
+        </Stack>
+        <Stack gap={5}>
+          <SectionLabel>STATO</SectionLabel>
+          <Row gap={6} style={{ flexWrap: 'wrap' }}>
+            {['Tutti', 'In elaborazione', 'Consegnato', 'Annullato'].map(f => (
+              <Pill key={f} active={statusFilter === f} onClick={() => setStatusFilter(f)}>{f}</Pill>
+            ))}
+          </Row>
+        </Stack>
+      </Row>
+
       <DataTable
-        headers={['Ordine', 'Data', 'Articoli', 'Totale', 'Stato', 'Dettaglio']}
+        headers={['Ordine', 'Data', 'Articoli', 'Figlio', 'Totale', 'Stato', '']}
         rows={filtered.map(o => [
-          o.num, o.date, o.items, o.total,
+          <span key={o.num + 'n'} style={{ fontWeight: 700, fontSize: 13 }}>{o.num}</span>,
+          <span key={o.num + 'd'} style={{ color: C.textSec, fontSize: 12 }}>{o.date}</span>,
+          o.items,
+          <Row key={o.num + 'c'} gap={6}>
+            <Avatar name={o.child} color={CHILD_COLOR[o.child]} size={20} />
+            <Text size="small">{o.child}</Text>
+          </Row>,
+          <span key={o.num + 't'} style={{ fontWeight: 600 }}>{o.total}</span>,
           <Pill key={o.num} size="sm" tone={statusTone(o.status)} active>{o.status}</Pill>,
-          <Button key={o.num + 'd'} variant="ghost">Dettaglio</Button>,
+          <Button key={o.num + 'det'} variant="ghost">Dettaglio</Button>,
         ])}
         emptyMessage="Nessun ordine trovato."
       />
+    </Stack>
+  )
+}
+
+function ScreenPromotions({ goTo }) {
+  const [catFilter, setCatFilter] = useState('Tutti')
+
+  const products = [
+    { title: 'Kit materiale scolastico 4ª A',    description: 'Tutto il necessario per il nuovo anno. Selezionato dalla Sc. Primaria G. Verdi.',  price: '€ 38,90', tag: 'Materiali',    childTag: 'Per Marco',  accentColor: '#3b82f6', badge: 'Consigliato' },
+    { title: 'Felpa ufficiale Sc. G. Verdi',      description: 'Felpa con logo scuola, disponibile in tutte le taglie. Cotone 100%.',              price: '€ 28,00', tag: 'Abbigliamento', childTag: 'Per Marco',  accentColor: '#3b82f6' },
+    { title: 'Set colori e plastilina Sez. B',    description: 'Kit specifico per la sezione B - Sc. Infanzia Arcobaleno.',                        price: '€ 14,90', tag: 'Materiali',    childTag: 'Per Sofia',  accentColor: '#e879a8' },
+    { title: 'Libri di testo 1ª media',           description: 'Lista completa adottata dalla Sc. Media L. da Vinci per la classe 1ª B.',          price: '€ 145,00', tag: 'Libri',       childTag: 'Per Giulia', accentColor: '#8b5cf6', badge: 'Prenotazione' },
+    { title: 'Zaino ergonomico scuola media',     description: 'Zaino studiato per studenti delle medie. Disponibile in 4 colori.',                price: '€ 59,90', originalPrice: '€ 75,00', tag: 'Accessori', childTag: 'Per Giulia', accentColor: '#8b5cf6', badge: '-20%' },
+    { title: 'Gita a Firenze – giugno 2025',      description: 'Gita scolastica di 2 giorni. Include pullman, alloggio e ingressi musei.',         price: '€ 85,00', tag: 'Attività',    childTag: 'Per Marco',  accentColor: '#3b82f6' },
+    { title: 'Laboratorio robotica – dopo scuola', description: 'Corso extrascolastico settimanale da ottobre. 12 lezioni da 90 minuti.',         price: '€ 120,00', tag: 'Attività',   childTag: 'Per Marco',  accentColor: '#3b82f6' },
+    { title: 'Diario scolastico 2025/2026',       description: 'Diario ufficiale ScuolaPay con spazio agenda, note e calendari scolastici.',      price: '€ 8,50',  tag: 'Materiali',   childTag: null,         accentColor: null },
+    { title: 'Assicurazione scolastica annuale',  description: 'Copertura per infortuni e RC personale. Valida per tutti i plessi della scuola.', price: '€ 12,00', tag: 'Servizi',     childTag: null,         accentColor: null, badge: 'Nuovo' },
+  ]
+
+  const categories = ['Tutti', 'Materiali', 'Abbigliamento', 'Libri', 'Attività', 'Accessori', 'Servizi']
+  const filtered = catFilter === 'Tutti' ? products : products.filter(p => p.tag === catFilter)
+
+  return (
+    <Stack gap={24}>
+      {/* Hero banner */}
+      <div style={{
+        padding: '24px 28px', borderRadius: 14,
+        background: C.bgRaised, border: `1px solid ${C.border}`,
+        borderLeft: `4px solid ${C.accent}`,
+      }}>
+        <Grid columns="1fr auto" gap={24} style={{ alignItems: 'center' }}>
+          <Stack gap={8}>
+            <Pill tone="info" active>Disponibile ora</Pill>
+            <H2>Materiale scolastico A.S. 2025/2026</H2>
+            <Text tone="secondary">
+              I kit e i materiali per il prossimo anno scolastico sono disponibili. Ordina entro il{' '}
+              <strong style={{ color: C.text }}>31 maggio</strong> per ricevere tutto a settembre.
+            </Text>
+            <Row gap={10}>
+              <Button variant="primary">Sfoglia kit scuola</Button>
+              <Button variant="secondary">Vedi liste classe per classe</Button>
+            </Row>
+          </Stack>
+          <Grid columns={3} gap={10} style={{ minWidth: 240 }}>
+            {CHILDREN_DATA.map(c => (
+              <Stack key={c.name} gap={4} style={{ alignItems: 'center', padding: '10px 8px', background: C.fill, borderRadius: 8 }}>
+                <Avatar name={`${c.name} ${c.surname}`} color={c.color} size={32} />
+                <Text size="small" style={{ fontWeight: 600, textAlign: 'center' }}>{c.name}</Text>
+                <Pill size="sm" style={{ background: `${c.color}18`, color: c.color, borderColor: `${c.color}44` }}>Kit disponibile</Pill>
+              </Stack>
+            ))}
+          </Grid>
+        </Grid>
+      </div>
+
+      {/* Categories */}
+      <Row gap={16} style={{ justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+        <Row gap={6} style={{ flexWrap: 'wrap' }}>
+          {categories.map(cat => (
+            <Pill key={cat} active={catFilter === cat} onClick={() => setCatFilter(cat)}>{cat}</Pill>
+          ))}
+        </Row>
+        <Text size="small" tone="secondary">{filtered.length} prodotti</Text>
+      </Row>
+
+      {/* Personalized section */}
+      {catFilter === 'Tutti' && (
+        <Stack gap={10}>
+          <Row gap={8} style={{ alignItems: 'center' }}>
+            <SectionLabel>SELEZIONATI PER I TUOI FIGLI</SectionLabel>
+            <div style={{ flex: 1, height: 1, background: C.borderLight }} />
+          </Row>
+          <Grid columns={3} gap={14}>
+            {products.filter(p => p.childTag && (p.badge === 'Consigliato' || p.badge === 'Prenotazione' || p.tag === 'Materiali')).slice(0, 3).map((p, i) => (
+              <ProductCard key={i} {...p} />
+            ))}
+          </Grid>
+        </Stack>
+      )}
+
+      {/* Full product grid */}
+      <Stack gap={10}>
+        <Row gap={8} style={{ alignItems: 'center' }}>
+          <SectionLabel>{catFilter === 'Tutti' ? 'TUTTO LO STORE' : catFilter.toUpperCase()}</SectionLabel>
+          <div style={{ flex: 1, height: 1, background: C.borderLight }} />
+        </Row>
+        <Grid columns={3} gap={14}>
+          {filtered.map((p, i) => (
+            <ProductCard key={i} {...p} />
+          ))}
+        </Grid>
+      </Stack>
+
+      {/* Footer note */}
+      <div style={{ padding: '14px 18px', background: C.fill, borderRadius: 8 }}>
+        <Row gap={10} style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <Text size="small" tone="secondary">
+            Tutti i prodotti sono gestiti direttamente dalle scuole attraverso ScuolaPay.
+            I pagamenti vengono acquisiti in modo sicuro.
+          </Text>
+          <Button variant="ghost">Vedi condizioni store →</Button>
+        </Row>
+      </div>
     </Stack>
   )
 }
@@ -829,6 +1103,7 @@ export default function App() {
       case 'enrollment-documents': return <ScreenEnrollmentDocuments goTo={setScreen} />
       case 'enrollment-detail': return <ScreenEnrollmentDetail goTo={setScreen} />
       case 'enrollment-confirmation': return <ScreenEnrollmentConfirmation goTo={setScreen} />
+      case 'promotions': return <ScreenPromotions goTo={setScreen} />
       default: return null
     }
   }
@@ -867,7 +1142,7 @@ export default function App() {
               ))}
               <span style={{ width: 1, height: 16, background: C.border, margin: '0 4px', flexShrink: 0 }} />
               <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>APP</Text>
-              {['dashboard', 'child-detail', 'payments', 'orders', 'enrollment', 'guest-success'].map(s => (
+              {['dashboard', 'child-detail', 'payments', 'orders', 'promotions', 'enrollment', 'guest-success'].map(s => (
                 <Pill key={s} active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
               ))}
             </Row>
