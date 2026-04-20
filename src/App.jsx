@@ -4,7 +4,7 @@ import {
   H2, H3, Text, Label, Pill, Button, Stat,
   Card, CardHeader, CardBody, DataTable,
   Field, Input, Sel, Toggle, CheckBox,
-  Alert, Timeline, Avatar, ProductCard, SectionLabel,
+  Alert, Timeline, Avatar, ProductCard, SectionLabel, UploadZone,
 } from './ui.jsx'
 import {
   ScreenEnrollmentOverview,
@@ -44,10 +44,11 @@ const SCREEN_LABELS = {
   'add-child-invite': 'Collega figlio – Via invito scuola',
   'add-child-verify': 'Collega figlio – Verifica CF (statale)',
   account: 'Profilo e sicurezza',
+  documents: 'Documenti',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child', 'add-child-invite', 'add-child-verify']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
@@ -86,7 +87,7 @@ const SIDEBAR_ITEMS = [
   { id: 'payments',        label: 'Pagamenti' },
   { id: 'orders',          label: 'Ordini' },
   { id: 'promotions',      label: 'Offerte & Store' },
-  { id: 'child-detail',    label: 'Documenti' },
+  { id: 'documents',       label: 'Documenti' },
   { id: 'account',         label: 'Profilo e sicurezza' },
 ]
 
@@ -602,6 +603,122 @@ function ScreenAddChildVerify({ goTo }) {
   )
 }
 
+
+const DOCUMENTS_DATA = {
+  Marco: [
+    { label: "Carta d'identità genitore",   note: 'Fronte e retro — PDF/JPG',                   initialStatus: 'uploaded', fileName: 'carta_identita_maria_rossi.pdf', required: true,  context: 'Iscrizione 2025/2026' },
+    { label: 'Codice fiscale studente',      note: 'Tessera sanitaria o equivalente',             initialStatus: 'uploaded', fileName: 'codice_fiscale_marco.pdf',       required: true,  context: 'Iscrizione 2025/2026' },
+    { label: 'Certificato vaccinazioni',     note: 'Libretto vaccinale o certificato ASL',        initialStatus: 'missing',  fileName: null,                            required: true,  context: 'Iscrizione 2025/2026' },
+    { label: "Carta d'identità studente",    note: 'Obbligatoria per studenti over 10 anni',      initialStatus: 'idle',     fileName: null,                            required: false, context: 'Iscrizione 2025/2026' },
+    { label: 'Contratto firmato 2024/2025',  note: 'Copia del contratto di iscrizione firmato',   initialStatus: 'verified', fileName: 'contratto_2024_marco.pdf',      required: false, context: 'A.S. 2024/2025' },
+  ],
+  Sofia: [
+    { label: "Carta d'identità genitore",   note: 'Fronte e retro — PDF/JPG',                   initialStatus: 'uploaded', fileName: 'carta_identita_maria_rossi.pdf', required: true,  context: 'Iscrizione 2025/2026' },
+    { label: 'Modulo diete speciali',        note: 'Solo se il figlio segue diete particolari',   initialStatus: 'idle',     fileName: null,                            required: false, context: 'Mensa scolastica' },
+    { label: 'Contratto firmato 2024/2025',  note: 'Copia del contratto di iscrizione firmato',   initialStatus: 'verified', fileName: 'contratto_2024_sofia.pdf',      required: false, context: 'A.S. 2024/2025' },
+  ],
+  Giulia: [
+    { label: "Carta d'identità genitore",   note: 'Fronte e retro — PDF/JPG',                   initialStatus: 'idle',     fileName: null,                            required: true,  context: 'Iscrizione 2025/2026' },
+    { label: 'Codice fiscale studente',      note: 'Tessera sanitaria o equivalente',             initialStatus: 'idle',     fileName: null,                            required: true,  context: 'Iscrizione 2025/2026' },
+    { label: 'Certificazione DSA/BES',       note: 'Solo se applicabile',                         initialStatus: 'idle',     fileName: null,                            required: false, context: 'Iscrizione 2025/2026' },
+  ],
+}
+
+function ScreenDocuments({ goTo }) {
+  const [selectedChild, setSelectedChild] = useState('Marco')
+  const docs = DOCUMENTS_DATA[selectedChild] || []
+  const child = CHILDREN_DATA.find(c => c.name === selectedChild)
+
+  const uploaded = docs.filter(d => d.initialStatus === 'uploaded' || d.initialStatus === 'verified').length
+  const missing  = docs.filter(d => d.initialStatus === 'missing').length
+  const pending  = docs.filter(d => d.initialStatus === 'idle').length
+
+  return (
+    <Stack gap={24}>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Stack gap={4}>
+          <H2>Documenti</H2>
+          <Text tone="secondary">Tutti i documenti richiesti dalla scuola, organizzati per figlio.</Text>
+        </Stack>
+        <Button variant="secondary">Carica documento</Button>
+      </Row>
+
+      {/* Child switcher */}
+      <Stack gap={8}>
+        <SectionLabel>SELEZIONA FIGLIO</SectionLabel>
+        <Row gap={10} style={{ flexWrap: 'wrap' }}>
+          {CHILDREN_DATA.map(c => (
+            <div
+              key={c.name}
+              onClick={() => setSelectedChild(c.name)}
+              style={{
+                padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+                border: `1.5px solid ${selectedChild === c.name ? c.color : C.border}`,
+                background: selectedChild === c.name ? `${c.color}12` : C.bgRaised,
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'all 0.15s',
+              }}
+            >
+              <Avatar name={`${c.name} ${c.surname}`} color={c.color} size={26} />
+              <Text style={{ fontWeight: selectedChild === c.name ? 700 : 500, fontSize: 13, color: selectedChild === c.name ? c.color : C.text }}>
+                {c.name}
+              </Text>
+            </div>
+          ))}
+        </Row>
+      </Stack>
+
+      {/* Stats strip */}
+      <Grid columns={3} gap={12}>
+        <Stat value={uploaded} label="Caricati / verificati" tone="success" />
+        <Stat value={missing}  label="Mancanti (richiesti)" tone={missing > 0 ? 'danger' : undefined} />
+        <Stat value={pending}  label="Da caricare" />
+      </Grid>
+
+      {/* Missing alert */}
+      {missing > 0 && (
+        <Alert
+          type="danger"
+          title={`${missing} documento mancante per ${selectedChild}`}
+          description="Alcuni documenti obbligatori non sono ancora stati caricati. La pratica di iscrizione potrebbe essere bloccata."
+          action="Carica ora"
+        />
+      )}
+
+      {/* Documents list */}
+      <Stack gap={8}>
+        {/* Group by context */}
+        {[...new Set(docs.map(d => d.context))].map(ctx => (
+          <Stack key={ctx} gap={8}>
+            <SectionLabel>{ctx.toUpperCase()}</SectionLabel>
+            {docs.filter(d => d.context === ctx).map((d, i) => (
+              <UploadZone key={i} {...d} />
+            ))}
+          </Stack>
+        ))}
+      </Stack>
+
+      {/* Info note */}
+      <div style={{ padding: '12px 16px', background: C.fill, borderRadius: 8 }}>
+        <Stack gap={4}>
+          <Text style={{ fontWeight: 600, fontSize: 13 }}>Formati accettati</Text>
+          <Text size="small" tone="secondary">
+            PDF, JPG, PNG · Dimensione massima 5 MB per file.
+            I documenti vengono trasmessi cifrati direttamente alla segreteria scolastica.
+            Una volta verificati dalla scuola non potranno essere eliminati.
+          </Text>
+        </Stack>
+      </div>
+
+      {/* Quick link to enrollment */}
+      <Row gap={10}>
+        <Button variant="ghost" onClick={() => goTo('enrollment-documents')}>
+          Gestisci documenti iscrizione →
+        </Button>
+      </Row>
+    </Stack>
+  )
+}
 
 const TAX_YEARS = [
   {
@@ -1676,6 +1793,7 @@ export default function App() {
       case 'enrollment-confirmation': return <ScreenEnrollmentConfirmation goTo={setScreen} />
       case 'promotions': return <ScreenPromotions goTo={setScreen} />
       case 'account': return <ScreenAccount goTo={setScreen} />
+      case 'documents': return <ScreenDocuments goTo={setScreen} />
       default: return null
     }
   }
