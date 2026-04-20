@@ -4,7 +4,19 @@ import {
   H2, H3, Text, Label, Pill, Button, Stat,
   Card, CardHeader, CardBody, DataTable,
   Field, Input, Sel, Toggle, CheckBox,
+  Alert, Timeline,
 } from './ui.jsx'
+import {
+  ScreenEnrollmentOverview,
+  ScreenEnrollmentData,
+  ScreenEnrollmentSignatures,
+  ScreenEnrollmentSignContract,
+  ScreenEnrollmentSignPending,
+  ScreenEnrollmentPayment,
+  ScreenEnrollmentDocuments,
+  ScreenEnrollmentDetail,
+  ScreenEnrollmentConfirmation,
+} from './enrollment.jsx'
 
 const SCREEN_LABELS = {
   signup: 'Login / Registrazione',
@@ -17,12 +29,22 @@ const SCREEN_LABELS = {
   'child-detail': 'Dettaglio Figlio',
   payments: 'Lista Pagamenti',
   orders: 'Lista Ordini',
-  enrollment: 'Flusso Iscrizione Online',
+  enrollment: 'Entry point iscrizione',
   'guest-success': 'Guest → Crea Account',
+  'enrollment-overview': 'Panoramica pratica',
+  'enrollment-data': 'Dati anagrafici',
+  'enrollment-signatures': 'Firme',
+  'enrollment-sign-contract': 'Firma contratto',
+  'enrollment-sign-pending': 'Stato firme',
+  'enrollment-payment': 'Pagamento',
+  'enrollment-documents': 'Documenti',
+  'enrollment-detail': 'Le mie iscrizioni',
+  'enrollment-confirmation': 'Conferma',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail']
+const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
   { name: 'Marco', surname: 'Rossi', school: 'Sc. Primaria G. Verdi', cls: '3ª A', age: 8 },
@@ -48,11 +70,11 @@ const ORDERS_DATA = [
 const SIDEBAR_ITEMS = [
   { id: 'dashboard', label: 'Home' },
   { id: 'child-detail', label: 'I miei figli' },
+  { id: 'enrollment-detail', label: 'Iscrizioni' },
   { id: 'payments', label: 'Pagamenti' },
   { id: 'orders', label: 'Ordini' },
-  { id: 'enrollment', label: 'Iscrizioni' },
   { id: 'child-detail', label: 'Documenti' },
-  { id: 'profile', label: 'Profilo e sicurezza' },
+  { id: 'signup', label: 'Profilo e sicurezza' },
 ]
 
 function statusTone(s) {
@@ -340,6 +362,25 @@ function ScreenDashboard({ goTo }) {
         <H2>Buongiorno, Maria</H2>
         <Text tone="tertiary" size="small">Lunedì 20 aprile 2025</Text>
       </Stack>
+
+      {/* Notification banners */}
+      <Stack gap={8}>
+        <Alert
+          type="warning"
+          title="Firma mancante — Iscrizione Marco Rossi A.S. 2025/2026"
+          description="Luca Rossi (Padre) non ha ancora firmato il contratto di iscrizione. La pratica è bloccata."
+          action="Gestisci firme"
+          onAction={() => goTo('enrollment-signatures')}
+        />
+        <Alert
+          type="info"
+          title="Documento mancante — Certificato vaccinazioni"
+          description="La scuola richiede il certificato vaccinazioni di Marco Rossi per completare la pratica."
+          action="Carica ora"
+          onAction={() => goTo('enrollment-documents')}
+        />
+      </Stack>
+
       <Grid columns={4} gap={12}>
         <Stat value="4" label="Ordini totali" />
         <Stat value="7" label="Pagamenti" tone="success" />
@@ -393,14 +434,20 @@ function ScreenDashboard({ goTo }) {
           <Divider />
           <H3>Iscrizioni attive</H3>
           <Card>
-            <CardHeader trailing={<Pill tone="warning" active size="sm">In corso</Pill>}>
+            <CardHeader trailing={<Pill tone="warning" active size="sm">In attesa firme</Pill>}>
               Iscrizione A.S. 2025/2026
             </CardHeader>
             <CardBody>
               <Stack gap={8}>
                 <Text size="small">Scuola Primaria G. Verdi — Marco Rossi</Text>
-                <Text tone="secondary" size="small">Inviata il 15 marzo 2025. In attesa di conferma dalla scuola.</Text>
-                <Button variant="secondary">Segui stato iscrizione</Button>
+                <Text tone="secondary" size="small">Avviata il 18 apr 2025. In attesa della firma di Luca Rossi.</Text>
+                <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                  <Pill size="sm" tone="success" active>Dati ✓</Pill>
+                  <Pill size="sm" tone="warning" active>Firme 1/2</Pill>
+                  <Pill size="sm" tone="neutral">Pagamento</Pill>
+                  <Pill size="sm" tone="neutral">Documenti 2/4</Pill>
+                </Row>
+                <Button variant="secondary" onClick={() => goTo('enrollment-overview')}>Apri pratica →</Button>
               </Stack>
             </CardBody>
           </Card>
@@ -410,7 +457,7 @@ function ScreenDashboard({ goTo }) {
   )
 }
 
-function ScreenChildDetail() {
+function ScreenChildDetail({ goTo }) {
   const marco = PAYMENTS_DATA.filter(p => p.child === 'Marco')
   return (
     <Stack gap={20}>
@@ -431,6 +478,41 @@ function ScreenChildDetail() {
         <Stat value="2" label="Ordini" tone="info" />
         <Stat value="2" label="Documenti" />
       </Grid>
+
+      {/* Enrollment section */}
+      <Divider />
+      <Stack gap={8}>
+        <Row gap={8}>
+          <H3>Iscrizione in corso</H3>
+          <Spacer />
+          <Button variant="ghost" onClick={() => goTo('enrollment-detail')}>Vedi tutte →</Button>
+        </Row>
+        <Card style={{ border: `1px solid rgba(224,154,48,0.4)` }}>
+          <CardHeader trailing={<Pill size="sm" tone="warning" active>In attesa firme</Pill>}>
+            A.S. 2025/2026 — Sc. Primaria G. Verdi
+          </CardHeader>
+          <CardBody>
+            <Stack gap={10}>
+              <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                <Pill size="sm" tone="success" active>Dati ✓</Pill>
+                <Pill size="sm" tone="warning" active>Firme 1/2</Pill>
+                <Pill size="sm">Pagamento in attesa</Pill>
+                <Pill size="sm" tone="warning" active>Documenti 2/4</Pill>
+              </Row>
+              <Alert
+                type="warning"
+                title="Firma mancante"
+                description="Luca Rossi deve ancora firmare il contratto di iscrizione."
+              />
+              <Row gap={8}>
+                <Button variant="primary" onClick={() => goTo('enrollment-overview')}>Apri pratica</Button>
+                <Button variant="ghost" onClick={() => goTo('enrollment-signatures')}>Gestisci firme</Button>
+              </Row>
+            </Stack>
+          </CardBody>
+        </Card>
+      </Stack>
+
       <Divider />
       <Stack gap={8}>
         <H3>Pagamenti</H3>
@@ -721,6 +803,7 @@ function ScreenGuestSuccess({ goTo }) {
 export default function App() {
   const [screen, setScreen] = useState('signup')
   const isApp = APP_SCREENS.includes(screen)
+  const isEnrollFlow = ENROLL_FLOW.includes(screen)
 
   const renderScreen = () => {
     switch (screen) {
@@ -731,11 +814,21 @@ export default function App() {
       case 'profile': return <ScreenProfile goTo={setScreen} />
       case 'add-child': return <ScreenAddChild goTo={setScreen} />
       case 'dashboard': return <ScreenDashboard goTo={setScreen} />
-      case 'child-detail': return <ScreenChildDetail />
+      case 'child-detail': return <ScreenChildDetail goTo={setScreen} />
       case 'payments': return <ScreenPayments />
       case 'orders': return <ScreenOrders />
       case 'enrollment': return <ScreenEnrollment />
       case 'guest-success': return <ScreenGuestSuccess goTo={setScreen} />
+      // Enrollment flow
+      case 'enrollment-overview': return <ScreenEnrollmentOverview goTo={setScreen} />
+      case 'enrollment-data': return <ScreenEnrollmentData goTo={setScreen} />
+      case 'enrollment-signatures': return <ScreenEnrollmentSignatures goTo={setScreen} />
+      case 'enrollment-sign-contract': return <ScreenEnrollmentSignContract goTo={setScreen} />
+      case 'enrollment-sign-pending': return <ScreenEnrollmentSignPending goTo={setScreen} />
+      case 'enrollment-payment': return <ScreenEnrollmentPayment goTo={setScreen} />
+      case 'enrollment-documents': return <ScreenEnrollmentDocuments goTo={setScreen} />
+      case 'enrollment-detail': return <ScreenEnrollmentDetail goTo={setScreen} />
+      case 'enrollment-confirmation': return <ScreenEnrollmentConfirmation goTo={setScreen} />
       default: return null
     }
   }
@@ -764,17 +857,23 @@ export default function App() {
       </div>
 
       {/* Screen navigator */}
-      <div style={{ borderBottom: `1px solid ${C.borderLight}`, background: C.bgRaised, padding: '10px 32px' }}>
+      <div style={{ borderBottom: `1px solid ${C.borderLight}`, background: C.bgRaised, padding: '8px 32px' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <Stack gap={8}>
+          <Stack gap={6}>
             <Row gap={6} style={{ flexWrap: 'wrap', alignItems: 'center' }}>
-              <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4 }}>REGISTRAZIONE</Text>
+              <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>REGISTRAZIONE</Text>
               {AUTH_FLOW.map(s => (
                 <Pill key={s} active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
               ))}
-              <span style={{ width: 1, height: 16, background: C.border, margin: '0 4px' }} />
-              <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4 }}>APP</Text>
+              <span style={{ width: 1, height: 16, background: C.border, margin: '0 4px', flexShrink: 0 }} />
+              <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>APP</Text>
               {['dashboard', 'child-detail', 'payments', 'orders', 'enrollment', 'guest-success'].map(s => (
+                <Pill key={s} active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
+              ))}
+            </Row>
+            <Row gap={6} style={{ flexWrap: 'wrap', alignItems: 'center' }}>
+              <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>FLUSSO ISCRIZIONE</Text>
+              {['enrollment-detail', 'enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation'].map(s => (
                 <Pill key={s} active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
               ))}
             </Row>
@@ -784,7 +883,11 @@ export default function App() {
 
       {/* Content */}
       <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px' }}>
-        {isApp ? (
+        {isEnrollFlow ? (
+          <div style={{ maxWidth: 960 }}>
+            {renderScreen()}
+          </div>
+        ) : isApp ? (
           <Row gap={0} style={{ alignItems: 'flex-start' }}>
             {/* Sidebar */}
             <div style={{ width: 200, minWidth: 200, paddingRight: 24, borderRight: `1px solid ${C.borderLight}` }}>
@@ -823,6 +926,7 @@ export default function App() {
         ) : (
           renderScreen()
         )}
+        
       </div>
     </div>
   )

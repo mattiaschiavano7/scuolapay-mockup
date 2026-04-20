@@ -258,6 +258,144 @@ export const Toggle = ({ checked, onChange }) => (
   </div>
 )
 
+// ─── STEPPER ─────────────────────────────────────────────────────────────────
+const CheckSvg = () => (
+  <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+    <path d="M1 4.5l3 3 6-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+export const Stepper = ({ steps, current }) => (
+  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+    {steps.map((step, i) => {
+      const done = i < current
+      const active = i === current
+      return (
+        <React.Fragment key={step}>
+          {i > 0 && (
+            <div style={{ flex: 1, height: 2, marginTop: 13, background: done ? C.success : C.borderLight, minWidth: 16 }} />
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 56 }}>
+            <div style={{
+              width: 28, height: 28, borderRadius: 14,
+              border: `2px solid ${done ? C.success : active ? C.accent : C.border}`,
+              background: done ? C.success : active ? C.accentFill : C.bgElevated,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 12, fontWeight: 700,
+              color: done ? '#fff' : active ? C.accent : C.textTer,
+            }}>
+              {done ? <CheckSvg /> : i + 1}
+            </div>
+            <span style={{
+              fontSize: 11, textAlign: 'center', fontWeight: active ? 600 : 400,
+              color: done ? C.success : active ? C.accent : C.textTer,
+              whiteSpace: 'nowrap',
+            }}>
+              {step}
+            </span>
+          </div>
+        </React.Fragment>
+      )
+    })}
+  </div>
+)
+
+// ─── ALERT ───────────────────────────────────────────────────────────────────
+export const Alert = ({ type = 'info', title, description, action, onAction, style }) => {
+  const c = {
+    info:    { bg: 'rgba(74,143,240,0.08)',  border: 'rgba(74,143,240,0.35)',  color: '#4a8ff0' },
+    warning: { bg: 'rgba(224,154,48,0.08)', border: 'rgba(224,154,48,0.35)', color: '#e09a30' },
+    danger:  { bg: 'rgba(224,80,80,0.08)',  border: 'rgba(224,80,80,0.35)',  color: '#e05050' },
+    success: { bg: 'rgba(58,196,122,0.08)', border: 'rgba(58,196,122,0.35)', color: '#3ac47a' },
+  }[type] || { bg: C.fill, border: C.border, color: C.text }
+  return (
+    <div style={{
+      padding: '11px 14px', borderRadius: 8,
+      background: c.bg, border: `1px solid ${c.border}`,
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
+      ...style,
+    }}>
+      <Stack gap={2} style={{ flex: 1 }}>
+        {title && <p style={{ fontSize: 13, fontWeight: 600, color: c.color, margin: 0 }}>{title}</p>}
+        {description && <p style={{ fontSize: 12, color: C.textSec, margin: 0 }}>{description}</p>}
+      </Stack>
+      {action && (
+        <button onClick={onAction} style={{
+          padding: '3px 10px', borderRadius: 5, border: `1px solid ${c.border}`,
+          background: 'transparent', color: c.color, fontWeight: 500, fontSize: 12,
+          cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+        }}>
+          {action}
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ─── UPLOAD ZONE ─────────────────────────────────────────────────────────────
+export const UploadZone = ({ label, initialStatus = 'idle', fileName, note, required }) => {
+  const [status, setStatus] = React.useState(initialStatus)
+  const sc = {
+    idle:     { pillTone: 'neutral', pillLabel: 'Da caricare', btnLabel: 'Carica', active: false },
+    uploaded: { pillTone: 'success', pillLabel: 'Caricato',    btnLabel: 'Sostituisci', active: true },
+    missing:  { pillTone: 'danger',  pillLabel: 'Mancante',    btnLabel: 'Carica', active: true },
+    verified: { pillTone: 'success', pillLabel: 'Verificato',  btnLabel: null, active: true },
+  }[status] || { pillTone: 'neutral', pillLabel: 'Da caricare', btnLabel: 'Carica', active: false }
+  const borderColor = (status === 'uploaded' || status === 'verified') ? C.success : status === 'missing' ? C.danger : C.border
+  const bg = (status === 'uploaded' || status === 'verified') ? 'rgba(58,196,122,0.05)' : status === 'missing' ? 'rgba(224,80,80,0.05)' : C.bgRaised
+  return (
+    <div style={{ padding: '12px 14px', borderRadius: 8, border: `1px solid ${borderColor}`, background: bg }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <Stack gap={3} style={{ flex: 1, minWidth: 160 }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{label}</span>
+            {required && <Pill size="sm" tone="warning">Obbligatorio</Pill>}
+          </div>
+          {note && <span style={{ fontSize: 11, color: C.textTer }}>{note}</span>}
+          {status === 'uploaded' && <span style={{ fontSize: 11, color: C.textSec }}>{fileName || 'documento_caricato.pdf'}</span>}
+        </Stack>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
+          <Pill size="sm" tone={sc.pillTone} active={sc.active}>{sc.pillLabel}</Pill>
+          {sc.btnLabel && (
+            <Button
+              variant="secondary"
+              onClick={() => setStatus(status === 'uploaded' ? 'idle' : 'uploaded')}
+            >
+              {sc.btnLabel}
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── TIMELINE ────────────────────────────────────────────────────────────────
+export const Timeline = ({ events }) => (
+  <Stack gap={0}>
+    {events.map((e, i) => {
+      const dotColor = e.type === 'success' ? C.success : e.type === 'warning' ? C.warning : e.type === 'pending' ? C.border : C.accent
+      return (
+        <div key={i} style={{ display: 'flex', gap: 12, paddingBottom: i < events.length - 1 ? 18 : 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: 12 }}>
+            <div style={{ width: 10, height: 10, borderRadius: 5, background: dotColor, flexShrink: 0, marginTop: 4 }} />
+            {i < events.length - 1 && (
+              <div style={{ width: 1, flex: 1, background: C.borderLight, marginTop: 4, minHeight: 14 }} />
+            )}
+          </div>
+          <Stack gap={2} style={{ flex: 1, paddingBottom: 2 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: e.type === 'pending' ? C.textSec : C.text }}>{e.title}</span>
+              <span style={{ fontSize: 11, color: C.textTer, whiteSpace: 'nowrap', flexShrink: 0 }}>{e.date}</span>
+            </div>
+            {e.description && <span style={{ fontSize: 12, color: C.textSec }}>{e.description}</span>}
+          </Stack>
+        </div>
+      )
+    })}
+  </Stack>
+)
+
 export const CheckBox = ({ checked, onChange, label }) => (
   <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: C.textSec }}>
     <div
