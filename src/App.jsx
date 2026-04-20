@@ -43,10 +43,11 @@ const SCREEN_LABELS = {
   promotions: 'Offerte & Store',
   'add-child-invite': 'Collega figlio – Via invito scuola',
   'add-child-verify': 'Collega figlio – Verifica CF (statale)',
+  account: 'Profilo e sicurezza',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child', 'add-child-invite', 'add-child-verify']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
@@ -86,7 +87,7 @@ const SIDEBAR_ITEMS = [
   { id: 'orders',          label: 'Ordini' },
   { id: 'promotions',      label: 'Offerte & Store' },
   { id: 'child-detail',    label: 'Documenti' },
-  { id: 'signup',          label: 'Profilo e sicurezza' },
+  { id: 'account',         label: 'Profilo e sicurezza' },
 ]
 
 function statusTone(s) {
@@ -601,6 +602,337 @@ function ScreenAddChildVerify({ goTo }) {
   )
 }
 
+
+const TAX_YEARS = [
+  {
+    year: '2024', label: 'Anno fiscale 2024',
+    total: '€ 1.248,50',
+    children: [
+      { name: 'Marco',  items: ['Mensa scolastica', 'Gita Firenze', 'Laboratorio musica'],  amount: '€ 852,00' },
+      { name: 'Sofia',  items: ['Materiale didattico', 'Contributo volontario'],             amount: '€ 396,50' },
+    ],
+    note: 'Include rette, mensa e contributi scolastici detraibili (art. 15 TUIR).',
+    ready: true,
+  },
+  {
+    year: '2023', label: 'Anno fiscale 2023',
+    total: '€ 980,00',
+    children: [
+      { name: 'Marco',  items: ['Mensa scolastica', 'Materiale didattico'],  amount: '€ 980,00' },
+    ],
+    note: 'Dichiarazione disponibile. Generata il 10 gen 2024.',
+    ready: true,
+  },
+  {
+    year: '2022', label: 'Anno fiscale 2022',
+    total: '€ 540,00',
+    children: [
+      { name: 'Marco',  items: ['Mensa scolastica'],  amount: '€ 540,00' },
+    ],
+    note: 'Dichiarazione disponibile. Generata il 14 gen 2023.',
+    ready: true,
+  },
+  {
+    year: '2025', label: 'Anno fiscale 2025 (in corso)',
+    total: '€ 308,00 finora',
+    children: [],
+    note: 'La dichiarazione sarà disponibile a gennaio 2026 a chiusura dell\'anno fiscale.',
+    ready: false,
+  },
+]
+
+function ScreenAccount({ goTo }) {
+  const [activeTab, setActiveTab] = useState('profilo')
+  const [openYear, setOpenYear] = useState(null)
+
+  const tabs = [
+    { id: 'profilo',    label: 'Dati personali' },
+    { id: 'sicurezza',  label: 'Sicurezza' },
+    { id: 'dichiarazioni', label: 'Dichiarazione spese' },
+    { id: 'notifiche',  label: 'Notifiche' },
+  ]
+
+  return (
+    <Stack gap={24}>
+      <Stack gap={4}>
+        <H2>Profilo e sicurezza</H2>
+        <Text tone="secondary">Gestisci i tuoi dati, la sicurezza dell'account e i documenti fiscali.</Text>
+      </Stack>
+
+      {/* Tabs */}
+      <Row gap={0} style={{ borderBottom: `1px solid ${C.border}` }}>
+        {tabs.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            style={{
+              padding: '9px 18px', border: 'none', cursor: 'pointer',
+              background: 'transparent', fontSize: 13, fontWeight: 500,
+              color: activeTab === t.id ? C.text : C.textSec,
+              borderBottom: `2px solid ${activeTab === t.id ? C.accent : 'transparent'}`,
+              marginBottom: -1, transition: 'color 0.1s',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </Row>
+
+      {/* Dati personali */}
+      {activeTab === 'profilo' && (
+        <Stack gap={20} style={{ maxWidth: 480 }}>
+          <Card>
+            <CardHeader>Dati personali</CardHeader>
+            <CardBody>
+              <Stack gap={14}>
+                <Grid columns={2} gap={10}>
+                  <Field label="Nome"><Input value="Maria" /></Field>
+                  <Field label="Cognome"><Input value="Rossi" /></Field>
+                </Grid>
+                <Stack gap={5}>
+                  <Field label="Email"><Input value="maria.rossi@email.it" disabled /></Field>
+                  <Row gap={6}>
+                    <Pill tone="success" active size="sm">Verificata</Pill>
+                    <Text tone="tertiary" size="small">Confermata con OTP</Text>
+                  </Row>
+                </Stack>
+                <Field label="Telefono"><Input placeholder="+39 333 0000000" value="+39 334 8821045" /></Field>
+                <Field label="Codice fiscale (opzionale)">
+                  <Input placeholder="RSSMRA80A41H501Q" value="" />
+                </Field>
+                <Button variant="primary">Salva modifiche</Button>
+              </Stack>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader>Figli collegati</CardHeader>
+            <CardBody>
+              <Stack gap={10}>
+                {CHILDREN_DATA.map(c => (
+                  <Row key={c.name} gap={10} style={{ justifyContent: 'space-between' }}>
+                    <Row gap={8}>
+                      <Avatar name={`${c.name} ${c.surname}`} color={c.color} size={28} />
+                      <Stack gap={1}>
+                        <Text style={{ fontWeight: 600, fontSize: 13 }}>{c.name} {c.surname}</Text>
+                        <Text size="small" tone="tertiary">{c.school} · {c.cls}</Text>
+                      </Stack>
+                    </Row>
+                    <Button variant="ghost">Gestisci</Button>
+                  </Row>
+                ))}
+                <Divider />
+                <Button variant="secondary" onClick={() => goTo('add-child')}>+ Collega altro figlio</Button>
+              </Stack>
+            </CardBody>
+          </Card>
+        </Stack>
+      )}
+
+      {/* Sicurezza */}
+      {activeTab === 'sicurezza' && (
+        <Stack gap={14} style={{ maxWidth: 480 }}>
+          <Card>
+            <CardHeader>Password</CardHeader>
+            <CardBody>
+              <Stack gap={10}>
+                <Field label="Password attuale"><Input type="password" placeholder="••••••••" /></Field>
+                <Field label="Nuova password"><Input type="password" placeholder="••••••••" /></Field>
+                <Field label="Conferma nuova password"><Input type="password" placeholder="••••••••" /></Field>
+                <Button variant="primary">Aggiorna password</Button>
+              </Stack>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader>Autenticazione a due fattori</CardHeader>
+            <CardBody>
+              <Stack gap={10}>
+                <Row gap={10} style={{ justifyContent: 'space-between' }}>
+                  <Stack gap={2}>
+                    <Text style={{ fontWeight: 600, fontSize: 13 }}>OTP via email</Text>
+                    <Text size="small" tone="secondary">Richiesto ad ogni accesso</Text>
+                  </Stack>
+                  <Pill tone="success" active size="sm">Attivo</Pill>
+                </Row>
+                <Divider />
+                <Row gap={10} style={{ justifyContent: 'space-between' }}>
+                  <Stack gap={2}>
+                    <Text style={{ fontWeight: 600, fontSize: 13 }}>App authenticator</Text>
+                    <Text size="small" tone="secondary">Google Authenticator, Authy…</Text>
+                  </Stack>
+                  <Button variant="secondary">Configura</Button>
+                </Row>
+              </Stack>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader trailing={<Pill size="sm" tone="danger">Attenzione</Pill>}>Zona pericolosa</CardHeader>
+            <CardBody>
+              <Stack gap={8}>
+                <Text size="small" tone="secondary">L'eliminazione dell'account è permanente. Tutti i dati verranno rimossi dopo 30 giorni.</Text>
+                <Button variant="ghost" style={{ color: C.danger, borderColor: C.danger + '44' }}>Elimina account</Button>
+              </Stack>
+            </CardBody>
+          </Card>
+        </Stack>
+      )}
+
+      {/* Dichiarazione spese */}
+      {activeTab === 'dichiarazioni' && (
+        <Stack gap={20}>
+          <Alert
+            type="info"
+            title="Dichiarazione spese scolastiche per la detrazione fiscale (730)"
+            description="ScuolaPay genera automaticamente il riepilogo delle spese detraibili ai sensi dell'art. 15 del TUIR. Puoi scaricarla in formato PDF e allegarla alla tua dichiarazione dei redditi."
+          />
+
+          <Stack gap={10}>
+            {TAX_YEARS.map(y => {
+              const isOpen = openYear === y.year
+              return (
+                <Card key={y.year} accent={y.ready ? C.success : C.border}>
+                  <div
+                    onClick={() => setOpenYear(isOpen ? null : y.year)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <CardBody>
+                      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Row gap={12}>
+                          <Stack gap={3}>
+                            <Row gap={8}>
+                              <Text style={{ fontWeight: 700, fontSize: 14 }}>{y.label}</Text>
+                              {y.ready
+                                ? <Pill size="sm" tone="success" active>Disponibile</Pill>
+                                : <Pill size="sm" tone="neutral">In corso</Pill>
+                              }
+                            </Row>
+                            <Text size="small" tone="secondary">{y.note}</Text>
+                          </Stack>
+                        </Row>
+                        <Row gap={14}>
+                          <Stack gap={1} style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: 18, fontWeight: 800, color: y.ready ? C.success : C.textSec, letterSpacing: '-0.5px' }}>{y.total}</span>
+                            <span style={{ fontSize: 11, color: C.textTer }}>spese detraibili</span>
+                          </Stack>
+                          {y.ready && (
+                            <Button variant="primary" onClick={e => { e.stopPropagation() }}>
+                              ↓ Scarica PDF
+                            </Button>
+                          )}
+                          <span style={{ color: C.textTer, fontSize: 14, userSelect: 'none' }}>
+                            {isOpen ? '▲' : '▼'}
+                          </span>
+                        </Row>
+                      </Row>
+                    </CardBody>
+                  </div>
+
+                  {isOpen && y.ready && (
+                    <>
+                      <Divider />
+                      <CardBody>
+                        <Stack gap={14}>
+                          <SectionLabel>DETTAGLIO PER FIGLIO</SectionLabel>
+                          {y.children.map(ch => (
+                            <div key={ch.name} style={{ padding: '12px 14px', background: C.fill, borderRadius: 8 }}>
+                              <Stack gap={8}>
+                                <Row gap={8} style={{ justifyContent: 'space-between' }}>
+                                  <Row gap={8}>
+                                    <Avatar
+                                      name={ch.name}
+                                      color={CHILD_COLOR[ch.name] || C.accent}
+                                      size={26}
+                                    />
+                                    <Text style={{ fontWeight: 600, fontSize: 13 }}>{ch.name}</Text>
+                                  </Row>
+                                  <Text style={{ fontWeight: 700 }}>{ch.amount}</Text>
+                                </Row>
+                                <Row gap={6} style={{ flexWrap: 'wrap' }}>
+                                  {ch.items.map(item => (
+                                    <Pill key={item} size="sm">{item}</Pill>
+                                  ))}
+                                </Row>
+                              </Stack>
+                            </div>
+                          ))}
+                          <Divider />
+                          <Row gap={10} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Text size="small" tone="tertiary">
+                              Documento generato da ScuolaPay · Valido per la dichiarazione dei redditi {y.year}
+                            </Text>
+                            <Row gap={8}>
+                              <Button variant="secondary">Anteprima</Button>
+                              <Button variant="primary">↓ Scarica PDF</Button>
+                            </Row>
+                          </Row>
+                        </Stack>
+                      </CardBody>
+                    </>
+                  )}
+                </Card>
+              )
+            })}
+          </Stack>
+
+          <div style={{ padding: '14px 16px', background: C.fill, borderRadius: 8 }}>
+            <Stack gap={4}>
+              <Text style={{ fontWeight: 600, fontSize: 13 }}>Cosa è incluso nella dichiarazione?</Text>
+              <Text size="small" tone="secondary">
+                Mensa scolastica, rette scolastiche (istituti paritari), contributi obbligatori, gite scolastiche deliberate dal consiglio di classe.
+                Le spese per materiale didattico acquistato sullo store <strong style={{ color: C.text }}>non sono detraibili</strong> e non compaiono nel documento.
+              </Text>
+            </Stack>
+          </div>
+        </Stack>
+      )}
+
+      {/* Notifiche */}
+      {activeTab === 'notifiche' && (
+        <Stack gap={14} style={{ maxWidth: 480 }}>
+          <Card>
+            <CardHeader>Canali di notifica</CardHeader>
+            <CardBody>
+              <Stack gap={14}>
+                {[
+                  { label: 'Email', desc: 'Pagamenti, documenti, promemoria', on: true },
+                  { label: 'Push (app mobile)', desc: 'Notifiche in tempo reale', on: false },
+                  { label: 'SMS', desc: 'Solo avvisi urgenti', on: true },
+                ].map(n => (
+                  <Row key={n.label} gap={10} style={{ justifyContent: 'space-between' }}>
+                    <Stack gap={2}>
+                      <Text style={{ fontWeight: 600, fontSize: 13 }}>{n.label}</Text>
+                      <Text size="small" tone="secondary">{n.desc}</Text>
+                    </Stack>
+                    <Toggle checked={n.on} onChange={() => {}} />
+                  </Row>
+                ))}
+              </Stack>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardHeader>Tipo di notifiche</CardHeader>
+            <CardBody>
+              <Stack gap={12}>
+                {[
+                  { label: 'Nuovo pagamento richiesto', on: true },
+                  { label: 'Firma richiesta sull\'iscrizione', on: true },
+                  { label: 'Documento da caricare', on: true },
+                  { label: 'Ordine spedito / consegnato', on: true },
+                  { label: 'Promozioni e offerte store', on: false },
+                  { label: 'Promemoria scadenze scolastiche', on: true },
+                ].map(n => (
+                  <Row key={n.label} gap={10} style={{ justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 13 }}>{n.label}</Text>
+                    <Toggle checked={n.on} onChange={() => {}} />
+                  </Row>
+                ))}
+              </Stack>
+            </CardBody>
+          </Card>
+        </Stack>
+      )}
+    </Stack>
+  )
+}
 
 function ScreenDashboard({ goTo }) {
   return (
@@ -1343,6 +1675,7 @@ export default function App() {
       case 'enrollment-detail': return <ScreenEnrollmentDetail goTo={setScreen} />
       case 'enrollment-confirmation': return <ScreenEnrollmentConfirmation goTo={setScreen} />
       case 'promotions': return <ScreenPromotions goTo={setScreen} />
+      case 'account': return <ScreenAccount goTo={setScreen} />
       default: return null
     }
   }
