@@ -24,7 +24,7 @@ const SCREEN_LABELS = {
   recovery: 'Storico Trovato',
   'recovery-empty': 'Nessuno Storico',
   profile: 'Completa Profilo',
-  'add-child': 'Aggiungi Figlio',
+  'add-child': 'Collega figlio – Scelta metodo',
   dashboard: 'Dashboard',
   'child-detail': 'Dettaglio Figlio',
   payments: 'Lista Pagamenti',
@@ -41,9 +41,11 @@ const SCREEN_LABELS = {
   'enrollment-detail': 'Le mie iscrizioni',
   'enrollment-confirmation': 'Conferma',
   promotions: 'Offerte & Store',
+  'add-child-invite': 'Collega figlio – Via invito scuola',
+  'add-child-verify': 'Collega figlio – Verifica CF (statale)',
 }
 
-const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child']
+const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child', 'add-child-invite', 'add-child-verify']
 const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
@@ -311,59 +313,294 @@ function ScreenProfile({ goTo }) {
 
 function ScreenAddChild({ goTo }) {
   return (
-    <Stack gap={24} style={{ maxWidth: 480 }}>
+    <Stack gap={28} style={{ maxWidth: 560 }}>
       <Stack gap={6}>
-        <H2>Aggiungi un figlio</H2>
-        <Text tone="secondary">Collega il profilo di tuo figlio per vedere pagamenti, ordini e attività correlati.</Text>
+        <H2>Collega un figlio</H2>
+        <Text tone="secondary">
+          Per tutelare la privacy dei minori, il collegamento è possibile solo tramite verifica.
+          Scegli il metodo in base al tipo di scuola.
+        </Text>
       </Stack>
-      <Stack gap={12}>
-        <Grid columns={2} gap={10}>
-          <Field label="Nome"><Input placeholder="Marco" value="" /></Field>
-          <Field label="Cognome"><Input placeholder="Rossi" value="" /></Field>
-        </Grid>
-        <Field label="Data di nascita (opzionale)"><Input placeholder="gg/mm/aaaa" value="" /></Field>
-        <Field label="Scuola"><Input placeholder="Nome istituto scolastico" value="" /></Field>
-        <Grid columns={2} gap={10}>
-          <Field label="Classe / Sezione"><Input placeholder="es. 3ª A" value="" /></Field>
-          <Field label="Anno scolastico">
-            <Sel value="2024/2025" options={[
-              { value: '2024/2025', label: '2024/2025' },
-              { value: '2025/2026', label: '2025/2026' },
-              { value: '2023/2024', label: '2023/2024' },
-            ]} />
-          </Field>
-        </Grid>
-        <Field label="Relazione">
-          <Sel value="madre" options={[
-            { value: 'madre', label: 'Madre' },
-            { value: 'padre', label: 'Padre' },
-            { value: 'tutore', label: 'Tutore legale' },
-            { value: 'altro', label: 'Altro' },
-          ]} />
-        </Field>
-      </Stack>
-      <div style={{ padding: 14, background: C.fill, borderRadius: 8, border: `1px solid ${C.border}` }}>
-        <Stack gap={8}>
-          <Stack gap={2}>
-            <Text style={{ fontWeight: 600, fontSize: 13 }}>Suggerimento dal tuo storico</Text>
-            <Text tone="secondary" size="small">
-              Abbiamo trovato ordini e pagamenti storicamente associati a uno studente di nome Marco.
-              Vuoi collegare anche quello storico al profilo?
-            </Text>
-          </Stack>
-          <Row gap={8}>
-            <Button variant="secondary">Sì, collega</Button>
-            <Button variant="ghost">No, grazie</Button>
+
+      {/* Method 1 – Invite link */}
+      <div
+        onClick={() => goTo('add-child-invite')}
+        style={{
+          padding: '20px 22px', borderRadius: 12, cursor: 'pointer',
+          border: `1.5px solid ${C.accent}55`,
+          background: C.accentFill,
+          transition: 'border-color 0.15s',
+        }}
+      >
+        <Stack gap={10}>
+          <Row gap={10} style={{ justifyContent: 'space-between' }}>
+            <Stack gap={4}>
+              <Row gap={8}>
+                <span style={{ fontSize: 18 }}>🔗</span>
+                <Text style={{ fontWeight: 700, fontSize: 15, color: C.accent }}>
+                  Scuola paritaria o privata
+                </Text>
+              </Row>
+              <Text tone="secondary" size="small">
+                La scuola ti ha inviato un link o un codice invito via email.
+                Il figlio viene collegato automaticamente con i dati già presenti nel sistema ScuolaPay.
+              </Text>
+            </Stack>
+            <Pill tone="info" active>Consigliato</Pill>
           </Row>
+          <Row gap={6} style={{ flexWrap: 'wrap' }}>
+            <Pill size="sm" tone="success" active>Dati verificati dalla scuola</Pill>
+            <Pill size="sm" tone="success" active>Nessun inserimento manuale</Pill>
+            <Pill size="sm" tone="success" active>Pronto in 30 secondi</Pill>
+          </Row>
+          <Text size="small" tone="tertiary">
+            La scuola genera il link dalla propria dashboard ScuolaPay e lo invia alle famiglie.
+          </Text>
         </Stack>
       </div>
-      <Row gap={8}>
-        <Button variant="primary" onClick={() => goTo('dashboard')}>Aggiungi figlio</Button>
-        <Button variant="ghost" onClick={() => goTo('dashboard')}>Salta per ora</Button>
-      </Row>
+
+      {/* Method 2 – Manual CF */}
+      <div
+        onClick={() => goTo('add-child-verify')}
+        style={{
+          padding: '20px 22px', borderRadius: 12, cursor: 'pointer',
+          border: `1.5px solid ${C.border}`,
+          background: C.bgRaised,
+          transition: 'border-color 0.15s',
+        }}
+      >
+        <Stack gap={10}>
+          <Stack gap={4}>
+            <Row gap={8}>
+              <span style={{ fontSize: 18 }}>🏛️</span>
+              <Text style={{ fontWeight: 700, fontSize: 15 }}>
+                Scuola statale
+              </Text>
+            </Row>
+            <Text tone="secondary" size="small">
+              ScuolaPay non gestisce direttamente i dati delle scuole statali.
+              Puoi collegare il figlio inserendo il codice fiscale e la data di nascita:
+              i dati sono sotto la tua responsabilità.
+            </Text>
+          </Stack>
+          <Row gap={6} style={{ flexWrap: 'wrap' }}>
+            <Pill size="sm" tone="warning" active>Dati auto-dichiarati</Pill>
+            <Pill size="sm">Nessuna verifica con la scuola</Pill>
+          </Row>
+          <Text size="small" tone="tertiary">
+            Potrai comunque ricevere notifiche, gestire documenti e accedere allo store ScuolaPay.
+            Le funzioni legate alla segreteria non saranno disponibili.
+          </Text>
+        </Stack>
+      </div>
+
+      <Button variant="ghost" onClick={() => goTo('dashboard')}>Annulla</Button>
     </Stack>
   )
 }
+
+function ScreenAddChildInvite({ goTo }) {
+  const [code, setCode] = useState('')
+  const [verified, setVerified] = useState(false)
+
+  const handleVerify = () => {
+    if (code.length >= 6) setVerified(true)
+  }
+
+  return (
+    <Stack gap={24} style={{ maxWidth: 480 }}>
+      <Stack gap={6}>
+        <Row gap={8} style={{ alignItems: 'center' }}>
+          <Button variant="ghost" onClick={() => goTo('add-child')}>← Indietro</Button>
+        </Row>
+        <H2>Collegamento tramite invito scuola</H2>
+        <Text tone="secondary">
+          Inserisci il codice o incolla il link che hai ricevuto dalla segreteria.
+        </Text>
+      </Stack>
+
+      {!verified ? (
+        <Stack gap={16}>
+          <Alert
+            type="info"
+            title="Dove trovo il codice?"
+            description="La segreteria lo invia via email all'indirizzo registrato. Puoi anche chiedere direttamente allo sportello."
+          />
+          <Field label="Codice invito o link completo">
+            <Input
+              placeholder="es. SCPX-A3K9-2025 oppure https://scuolapay.it/invite/..."
+              value={code}
+              onChange={setCode}
+            />
+          </Field>
+          <Text size="small" tone="tertiary">
+            Il codice è valido per 7 giorni dall'invio. Ogni codice può essere usato una sola volta
+            e identifica un unico nucleo familiare.
+          </Text>
+          <Button variant="primary" disabled={code.length < 6} onClick={handleVerify}>
+            Verifica codice
+          </Button>
+        </Stack>
+      ) : (
+        <Stack gap={16}>
+          <Alert type="success" title="Codice valido — figlio identificato" description="I dati seguenti provengono direttamente dal sistema ScuolaPay della scuola." />
+
+          <Card accent={C.success}>
+            <CardHeader trailing={<Pill size="sm" tone="success" active>Verificato dalla scuola</Pill>}>
+              Dati figlio rilevati
+            </CardHeader>
+            <CardBody>
+              <Stack gap={10}>
+                <Grid columns={2} gap={12}>
+                  <Stack gap={3}>
+                    <Label>Nome</Label>
+                    <Text style={{ fontWeight: 600 }}>Luca</Text>
+                  </Stack>
+                  <Stack gap={3}>
+                    <Label>Cognome</Label>
+                    <Text style={{ fontWeight: 600 }}>Rossi</Text>
+                  </Stack>
+                  <Stack gap={3}>
+                    <Label>Scuola</Label>
+                    <Text style={{ fontWeight: 600 }}>Sc. Primaria G. Verdi</Text>
+                  </Stack>
+                  <Stack gap={3}>
+                    <Label>Classe</Label>
+                    <Text style={{ fontWeight: 600 }}>2ª B</Text>
+                  </Stack>
+                  <Stack gap={3}>
+                    <Label>Anno scolastico</Label>
+                    <Text style={{ fontWeight: 600 }}>2025/2026</Text>
+                  </Stack>
+                  <Stack gap={3}>
+                    <Label>Ruolo genitore</Label>
+                    <Text style={{ fontWeight: 600 }}>Madre</Text>
+                  </Stack>
+                </Grid>
+                <Divider />
+                <Text size="small" tone="tertiary">
+                  Non puoi modificare questi dati: sono gestiti dalla segreteria scolastica.
+                  Se c'è un errore, contatta la scuola.
+                </Text>
+              </Stack>
+            </CardBody>
+          </Card>
+
+          <Stack gap={8}>
+            <CheckBox checked={true} onChange={() => {}} label="Confermo di essere il genitore/tutore legale di questo figlio e di avere il diritto di gestire i suoi dati scolastici." />
+          </Stack>
+          <Row gap={10}>
+            <Button variant="primary" onClick={() => goTo('dashboard')}>Collega figlio al mio account</Button>
+            <Button variant="ghost" onClick={() => { setVerified(false); setCode('') }}>Annulla</Button>
+          </Row>
+        </Stack>
+      )}
+    </Stack>
+  )
+}
+
+function ScreenAddChildVerify({ goTo }) {
+  const [step, setStep] = useState(1)
+  const [cf, setCf] = useState('')
+  const [dob, setDob] = useState('')
+  const [relation, setRelation] = useState('madre')
+  const [school, setSchool] = useState('')
+  const [cls, setCls] = useState('')
+
+  return (
+    <Stack gap={24} style={{ maxWidth: 480 }}>
+      <Stack gap={6}>
+        <Row gap={8}>
+          <Button variant="ghost" onClick={() => step === 1 ? goTo('add-child') : setStep(1)}>← Indietro</Button>
+        </Row>
+        <H2>Collega figlio — Scuola statale</H2>
+        <Text tone="secondary">
+          Inserisci i dati del figlio. Verranno associati al tuo account senza verifica esterna.
+        </Text>
+      </Stack>
+
+      <Alert
+        type="warning"
+        title="Dati auto-dichiarati"
+        description="Per le scuole statali non effettuiamo verifiche con la segreteria. Sei responsabile dell'accuratezza dei dati inseriti e dell'autorizzazione a trattarli."
+      />
+
+      {step === 1 && (
+        <Stack gap={16}>
+          <Stack gap={4}>
+            <SectionLabel>PASSO 1 DI 2 — VERIFICA IDENTITÀ FIGLIO</SectionLabel>
+            <Text size="small" tone="tertiary">
+              Usiamo codice fiscale e data di nascita per costruire un identificativo univoco locale.
+              Questi dati non vengono condivisi con la scuola.
+            </Text>
+          </Stack>
+          <Field label="Codice fiscale del figlio">
+            <Input
+              placeholder="es. RSSMRC16A01H501P"
+              value={cf}
+              onChange={v => setCf(v.toUpperCase())}
+            />
+          </Field>
+          <Field label="Data di nascita del figlio">
+            <Input placeholder="gg/mm/aaaa" type="text" value={dob} onChange={setDob} />
+          </Field>
+          <Field label="La tua relazione con il figlio">
+            <Sel value={relation} onChange={setRelation} options={[
+              { value: 'madre', label: 'Madre' },
+              { value: 'padre', label: 'Padre' },
+              { value: 'tutore', label: 'Tutore legale' },
+              { value: 'altro', label: 'Altro (specificare)' },
+            ]} />
+          </Field>
+          <Button
+            variant="primary"
+            disabled={cf.length < 16 || dob.length < 8}
+            onClick={() => setStep(2)}
+          >
+            Continua →
+          </Button>
+        </Stack>
+      )}
+
+      {step === 2 && (
+        <Stack gap={16}>
+          <Stack gap={4}>
+            <SectionLabel>PASSO 2 DI 2 — DATI SCOLASTICI</SectionLabel>
+            <Text size="small" tone="tertiary">
+              Questi dati ci servono solo per organizzare le informazioni nel tuo account.
+            </Text>
+          </Stack>
+          <Grid columns={2} gap={10}>
+            <Field label="Nome figlio"><Input placeholder="Es. Marco" value="" /></Field>
+            <Field label="Cognome figlio"><Input placeholder="Es. Rossi" value="" /></Field>
+          </Grid>
+          <Field label="Nome della scuola">
+            <Input placeholder="es. I.C. A. Manzoni" value={school} onChange={setSchool} />
+          </Field>
+          <Grid columns={2} gap={10}>
+            <Field label="Classe / Sezione"><Input placeholder="es. 2ª B" value={cls} onChange={setCls} /></Field>
+            <Field label="Anno scolastico">
+              <Sel value="2025/2026" options={[
+                { value: '2025/2026', label: '2025/2026' },
+                { value: '2024/2025', label: '2024/2025' },
+              ]} />
+            </Field>
+          </Grid>
+          <Divider />
+          <Stack gap={8}>
+            <CheckBox checked={true} onChange={() => {}} label="Dichiaro di essere il genitore/tutore legale e di avere il diritto di trattare i dati scolastici di questo figlio." />
+            <CheckBox checked={true} onChange={() => {}} label="Ho preso visione dell'Informativa Privacy di ScuolaPay relativa ai dati dei minori." />
+          </Stack>
+          <Row gap={10}>
+            <Button variant="primary" onClick={() => goTo('dashboard')}>Salva e collega figlio</Button>
+            <Button variant="ghost" onClick={() => goTo('add-child')}>Annulla</Button>
+          </Row>
+        </Stack>
+      )}
+    </Stack>
+  )
+}
+
 
 function ScreenDashboard({ goTo }) {
   return (
@@ -1087,6 +1324,8 @@ export default function App() {
       case 'recovery-empty': return <ScreenRecoveryEmpty goTo={setScreen} />
       case 'profile': return <ScreenProfile goTo={setScreen} />
       case 'add-child': return <ScreenAddChild goTo={setScreen} />
+      case 'add-child-invite': return <ScreenAddChildInvite goTo={setScreen} />
+      case 'add-child-verify': return <ScreenAddChildVerify goTo={setScreen} />
       case 'dashboard': return <ScreenDashboard goTo={setScreen} />
       case 'child-detail': return <ScreenChildDetail goTo={setScreen} />
       case 'payments': return <ScreenPayments />
