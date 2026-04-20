@@ -1331,23 +1331,30 @@ function ScreenChildDetail({ goTo }) {
         <H3>Pagamenti</H3>
         <DataTable
           headers={['Data', 'Descrizione', 'Importo', 'Stato', 'Ricevuta']}
-          rows={marco.map(p => [
-            p.date, p.desc, p.amount,
+          rows={payments.map(p => [
+            <span key={p.id + 'd'} style={{ color: C.textSec, fontSize: 12 }}>{p.date}</span>,
+            p.desc,
+            <span key={p.id + 'a'} style={{ fontWeight: 600 }}>{p.amount}</span>,
             <Pill key={p.id} size="sm" tone={statusTone(p.status)} active>{p.status}</Pill>,
             p.status === 'Completato'
               ? <Button key={p.id + 'r'} variant="ghost">Scarica</Button>
               : <span key={p.id + 'r'} style={{ color: C.textTer }}>—</span>,
           ])}
+          emptyMessage="Nessun pagamento per questo figlio."
         />
       </Stack>
       <Stack gap={8}>
         <H3>Ordini</H3>
         <DataTable
           headers={['Ordine', 'Data', 'Articoli', 'Totale', 'Stato']}
-          rows={ORDERS_DATA.slice(0, 2).map(o => [
-            o.num, o.date, o.items, o.total,
+          rows={orders.map(o => [
+            <span key={o.num + 'n'} style={{ fontWeight: 700, fontSize: 13 }}>{o.num}</span>,
+            <span key={o.num + 'd'} style={{ color: C.textSec, fontSize: 12 }}>{o.date}</span>,
+            o.items,
+            <span key={o.num + 't'} style={{ fontWeight: 600 }}>{o.total}</span>,
             <Pill key={o.num} size="sm" tone={statusTone(o.status)} active>{o.status}</Pill>,
           ])}
+          emptyMessage="Nessun ordine per questo figlio."
         />
       </Stack>
       <Stack gap={8}>
