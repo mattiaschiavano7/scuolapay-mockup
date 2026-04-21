@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   C, Stack, Row, Grid, Divider, Spacer,
   H2, H3, Text, Label, Pill, Button, Stat,
@@ -17,6 +17,30 @@ import {
   ScreenEnrollmentDetail,
   ScreenEnrollmentConfirmation,
 } from './enrollment.jsx'
+
+// ─── THEME PALETTES ───────────────────────────────────────────────────────────
+const DARK_C = {
+  bg: '#0d0d0d', bgRaised: '#161616', bgElevated: '#1e1e1e',
+  fill: '#252525', fillHover: '#2e2e2e',
+  border: '#2b2b2b', borderLight: '#1f1f1f',
+  text: '#f0f0f0', textSec: '#888', textTer: '#484848',
+  accent: '#3b82f6', accentFill: 'rgba(59,130,246,0.12)',
+  success: '#22c55e', successFill: 'rgba(34,197,94,0.12)',
+  warning: '#f59e0b', warningFill: 'rgba(245,158,11,0.12)',
+  danger: '#ef4444', dangerFill: 'rgba(239,68,68,0.12)',
+  info: '#3b82f6', infoFill: 'rgba(59,130,246,0.12)',
+}
+const LIGHT_C = {
+  bg: '#f4f5f7', bgRaised: '#ffffff', bgElevated: '#f9fafb',
+  fill: '#eef0f3', fillHover: '#e5e7eb',
+  border: '#dde0e5', borderLight: '#eaecef',
+  text: '#111827', textSec: '#6b7280', textTer: '#c0c4cc',
+  accent: '#f97316', accentFill: 'rgba(249,115,22,0.08)',
+  success: '#16a34a', successFill: 'rgba(22,163,74,0.08)',
+  warning: '#d97706', warningFill: 'rgba(217,119,6,0.08)',
+  danger: '#dc2626', dangerFill: 'rgba(220,38,38,0.08)',
+  info: '#2563eb', infoFill: 'rgba(37,99,235,0.08)',
+}
 
 const SCREEN_LABELS = {
   signup: 'Login / Registrazione',
@@ -45,10 +69,11 @@ const SCREEN_LABELS = {
   'add-child-verify': 'Collega figlio – Verifica CF (statale)',
   account: 'Profilo e sicurezza',
   documents: 'Documenti',
+  'app-preview': 'Anteprima App Mobile',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child', 'add-child-invite', 'add-child-verify']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents', 'app-preview']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
@@ -1765,12 +1790,332 @@ function ScreenGuestSuccess({ goTo }) {
   )
 }
 
+// ─── MOBILE APP PREVIEW ───────────────────────────────────────────────────────
+const MOB = {
+  bg: '#f4f5f7', raised: '#ffffff', elevated: '#f0f1f3',
+  border: '#e2e4e8', text: '#111827', textSec: '#6b7280', textTer: '#c0c4cc',
+  accent: '#f97316', success: '#16a34a', warning: '#d97706', danger: '#dc2626',
+}
+
+function MobileScreen({ activeTab, setActiveTab }) {
+  const tabs = [
+    { id: 'home',    icon: '⊞', label: 'Home' },
+    { id: 'pay',     icon: '💳', label: 'Pagamenti' },
+    { id: 'enroll',  icon: '📋', label: 'Iscrizioni' },
+    { id: 'profile', icon: '👤', label: 'Profilo' },
+  ]
+
+  const pill = (label, color, bg) => (
+    <span style={{ fontSize: 10, fontWeight: 700, color, background: bg, padding: '2px 8px', borderRadius: 999, border: `1px solid ${color}44` }}>{label}</span>
+  )
+
+  return (
+    <div style={{ width: '100%', height: '100%', background: MOB.bg, display: 'flex', flexDirection: 'column', fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', overflow: 'hidden' }}>
+      {/* Status bar */}
+      <div style={{ height: 44, background: MOB.raised, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 20px 8px', borderBottom: `1px solid ${MOB.border}` }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: MOB.text }}>9:41</span>
+        <span style={{ fontSize: 11, color: MOB.textSec }}>5G ■■■ 🔋</span>
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 0' }}>
+
+        {activeTab === 'home' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800, color: MOB.text, letterSpacing: '-0.5px' }}>Ciao, Maria 👋</div>
+                <div style={{ fontSize: 11, color: MOB.textSec, marginTop: 2 }}>Lunedì 20 aprile 2025</div>
+              </div>
+              <div style={{ width: 36, height: 36, borderRadius: 18, background: MOB.accent + '22', border: `1.5px solid ${MOB.accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🔔</div>
+            </div>
+            {/* Children */}
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+              {[{n:'Marco',c:'#3b82f6'},{n:'Sofia',c:'#e879a8'},{n:'Giulia',c:'#8b5cf6'}].map(ch => (
+                <div key={ch.n} style={{ flexShrink: 0, padding: '8px 12px', background: MOB.raised, borderRadius: 10, border: `1.5px solid ${ch.c}33`, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 14, background: ch.c + '22', border: `1.5px solid ${ch.c}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: ch.c }}>{ch.n[0]}</div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: MOB.text }}>{ch.n}</span>
+                </div>
+              ))}
+            </div>
+            {/* Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[{v:'€ 308',l:'Speso totale',c:MOB.accent},{v:'9',l:'Pagamenti',c:MOB.success},{v:'3',l:'Iscrizioni',c:'#8b5cf6'},{v:'2',l:'Da fare',c:MOB.warning}].map(s => (
+                <div key={s.l} style={{ padding: '12px 12px', background: MOB.raised, borderRadius: 10, border: `1px solid ${MOB.border}`, borderLeft: `3px solid ${s.c}` }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: s.c, letterSpacing: '-0.5px' }}>{s.v}</div>
+                  <div style={{ fontSize: 10, color: MOB.textSec, marginTop: 3 }}>{s.l}</div>
+                </div>
+              ))}
+            </div>
+            {/* Alert */}
+            <div style={{ padding: '10px 12px', background: 'rgba(249,115,22,0.07)', borderLeft: `3px solid ${MOB.accent}`, borderRadius: 8, border: `1px solid ${MOB.accent}22` }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: MOB.accent }}>Firma mancante — Marco Rossi</div>
+              <div style={{ fontSize: 11, color: MOB.textSec, marginTop: 2 }}>Luca Rossi non ha ancora firmato l'iscrizione.</div>
+            </div>
+            {/* Recent payments */}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: MOB.textTer, letterSpacing: '0.6px', marginBottom: 8 }}>PAGAMENTI RECENTI</div>
+              {[{d:'Mensa apr – Marco','a':'€ 78,00',s:'Completato'},{d:'Materiale – Sofia','a':'€ 45,50',s:'Completato'},{d:'Libri 1ª media – Giulia','a':'€ 145,00',s:'In attesa'}].map((p,i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: `1px solid ${MOB.border}` }}>
+                  <span style={{ fontSize: 12, color: MOB.text }}>{p.d}</span>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: MOB.text }}>{p.a}</span>
+                    {pill(p.s, p.s==='Completato'?MOB.success:MOB.warning, p.s==='Completato'?'rgba(22,163,74,0.1)':'rgba(217,119,6,0.1)')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'pay' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: MOB.text, letterSpacing: '-0.5px' }}>Pagamenti</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['Tutti','Marco','Sofia','Giulia'].map(f => (
+                <span key={f} style={{ fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: f==='Tutti'?MOB.accent:'transparent', color: f==='Tutti'?'#fff':MOB.textSec, border: `1px solid ${f==='Tutti'?MOB.accent:MOB.border}` }}>{f}</span>
+              ))}
+            </div>
+            <div style={{ background: MOB.raised, borderRadius: 12, border: `1px solid ${MOB.border}`, overflow: 'hidden' }}>
+              {PAYMENTS_DATA.slice(0,6).map((p,i) => (
+                <div key={p.id} style={{ padding: '12px 14px', borderBottom: i<5?`1px solid ${MOB.border}`:'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: MOB.text }}>{p.desc}</div>
+                    <div style={{ fontSize: 10, color: MOB.textSec, marginTop: 2 }}>{p.child} · {p.date}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: MOB.text }}>{p.amount}</div>
+                    {pill(p.status, p.status==='Completato'?MOB.success:MOB.warning, p.status==='Completato'?'rgba(22,163,74,0.1)':'rgba(217,119,6,0.1)')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'enroll' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: MOB.text, letterSpacing: '-0.5px' }}>Iscrizioni</div>
+            {CHILDREN_DATA.map(ch => {
+              const tone = ch.enrollStatus === 'Confermata' ? MOB.success : ch.enrollStatus === 'Bozza' ? MOB.textSec : MOB.warning
+              return (
+                <div key={ch.name} style={{ background: MOB.raised, borderRadius: 12, border: `1px solid ${MOB.border}`, borderLeft: `3px solid ${ch.color}`, overflow: 'hidden' }}>
+                  <div style={{ padding: '12px 14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 16, background: ch.color + '22', border: `1.5px solid ${ch.color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: ch.color }}>{ch.name[0]}</div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: MOB.text }}>{ch.name} {ch.surname}</div>
+                          <div style={{ fontSize: 10, color: MOB.textSec }}>{ch.school}</div>
+                        </div>
+                      </div>
+                      {pill(ch.enrollStatus, tone, tone + '18')}
+                    </div>
+                    {/* Mini stepper */}
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      {['Dati','Firme','Pagamento','Docs','Conferma'].map((s,i) => {
+                        const done = ch.enrollStatus==='Confermata' ? true : i === 0
+                        const active = ch.enrollStatus==='In attesa firme' && i === 1
+                        return (
+                          <React.Fragment key={s}>
+                            {i>0 && <div style={{ flex: 1, height: 2, background: done?MOB.success:MOB.border, borderRadius: 1 }} />}
+                            <div style={{ width: 18, height: 18, borderRadius: 9, background: done?MOB.success:active?ch.color:MOB.elevated, border: `2px solid ${done?MOB.success:active?ch.color:MOB.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              {done && <span style={{ color: '#fff', fontSize: 8, fontWeight: 900 }}>✓</span>}
+                              {!done && <span style={{ color: active?ch.color:MOB.textTer, fontSize: 8, fontWeight: 700 }}>{i+1}</span>}
+                            </div>
+                          </React.Fragment>
+                        )
+                      })}
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px 14px', background: MOB.elevated, borderTop: `1px solid ${MOB.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: MOB.textSec }}>{ch.enrollYear}</span>
+                    <span style={{ fontSize: 11, color: ch.color, fontWeight: 600 }}>Apri →</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {activeTab === 'profile' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* User card */}
+            <div style={{ background: MOB.raised, borderRadius: 12, border: `1px solid ${MOB.border}`, padding: '20px 16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 28, background: MOB.accent + '22', border: `2px solid ${MOB.accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, color: MOB.accent }}>M</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: MOB.text }}>Maria Rossi</div>
+              <div style={{ fontSize: 12, color: MOB.textSec }}>maria.rossi@email.it</div>
+              <span style={{ fontSize: 10, fontWeight: 700, color: MOB.success, background: 'rgba(22,163,74,0.1)', padding: '3px 10px', borderRadius: 999 }}>Account verificato</span>
+            </div>
+            {/* Menu items */}
+            {[
+              { icon: '👦', label: 'I miei figli', sub: '3 figli collegati' },
+              { icon: '📄', label: 'Dichiarazione spese', sub: 'Scarica per la detrazione' },
+              { icon: '🔔', label: 'Notifiche', sub: 'Email, Push, SMS' },
+              { icon: '🔒', label: 'Sicurezza', sub: 'Password e 2FA' },
+              { icon: '💳', label: 'Metodi di pagamento', sub: '1 carta salvata' },
+              { icon: '⚙️', label: 'Impostazioni', sub: '' },
+            ].map(item => (
+              <div key={item.label} style={{ background: MOB.raised, borderRadius: 10, border: `1px solid ${MOB.border}`, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <span style={{ fontSize: 18 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: MOB.text }}>{item.label}</div>
+                    {item.sub && <div style={{ fontSize: 10, color: MOB.textSec, marginTop: 1 }}>{item.sub}</div>}
+                  </div>
+                </div>
+                <span style={{ color: MOB.textSec, fontSize: 14 }}>›</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom tab bar */}
+      <div style={{ height: 68, background: MOB.raised, borderTop: `1px solid ${MOB.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 8px 8px' }}>
+        {tabs.map(t => (
+          <div key={t.id} onClick={() => setActiveTab(t.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '4px 16px', cursor: 'pointer' }}>
+            <span style={{ fontSize: 20 }}>{t.icon}</span>
+            <span style={{ fontSize: 10, fontWeight: activeTab===t.id?700:400, color: activeTab===t.id?MOB.accent:MOB.textSec }}>{t.label}</span>
+            {activeTab===t.id && <div style={{ width: 4, height: 4, borderRadius: 2, background: MOB.accent }} />}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ScreenAppPreview() {
+  const [activeTab, setActiveTab] = useState('home')
+
+  return (
+    <Stack gap={24}>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <Stack gap={4}>
+          <H2>Anteprima App Mobile</H2>
+          <Text tone="secondary">
+            Con React Native + Expo è possibile costruire l'app iOS/Android che condivide la stessa logica di dati del portale web.
+          </Text>
+        </Stack>
+      </Row>
+
+      <Grid columns="auto 1fr" gap={40} style={{ alignItems: 'start' }}>
+        {/* Phone frame */}
+        <div style={{ position: 'relative' }}>
+          <div style={{
+            width: 320, height: 680,
+            borderRadius: 44,
+            border: '10px solid #1c1c1e',
+            background: MOB.bg,
+            overflow: 'hidden',
+            boxShadow: '0 32px 64px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1)',
+            position: 'relative',
+          }}>
+            {/* Notch */}
+            <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 110, height: 26, background: '#1c1c1e', borderBottomLeftRadius: 18, borderBottomRightRadius: 18, zIndex: 10 }} />
+            <div style={{ position: 'absolute', inset: 0, top: 0 }}>
+              <MobileScreen activeTab={activeTab} setActiveTab={setActiveTab} />
+            </div>
+          </div>
+          {/* Side buttons */}
+          <div style={{ position: 'absolute', left: -14, top: 100, width: 6, height: 30, background: '#2c2c2e', borderRadius: '3px 0 0 3px' }} />
+          <div style={{ position: 'absolute', left: -14, top: 140, width: 6, height: 48, background: '#2c2c2e', borderRadius: '3px 0 0 3px' }} />
+          <div style={{ position: 'absolute', left: -14, top: 198, width: 6, height: 48, background: '#2c2c2e', borderRadius: '3px 0 0 3px' }} />
+          <div style={{ position: 'absolute', right: -14, top: 140, width: 6, height: 64, background: '#2c2c2e', borderRadius: '0 3px 3px 0' }} />
+        </div>
+
+        {/* Info panel */}
+        <Stack gap={20}>
+          <Stack gap={8}>
+            <SectionLabel>STACK TECNOLOGICO</SectionLabel>
+            <Grid columns={2} gap={10}>
+              {[
+                { tech: 'React Native + Expo', desc: 'Unica codebase per iOS e Android' },
+                { tech: 'Expo Router', desc: 'Navigazione file-based, type-safe' },
+                { tech: 'React Query / Zustand', desc: 'Gestione stato e cache API' },
+                { tech: 'Same REST/GraphQL API', desc: 'Stessi endpoint del portale web' },
+                { tech: 'Expo Notifications', desc: 'Push notifications native iOS/Android' },
+                { tech: 'Expo SecureStore', desc: 'Token e credenziali cifrati sul device' },
+              ].map(t => (
+                <Card key={t.tech}>
+                  <CardBody style={{ padding: '10px 12px' }}>
+                    <Stack gap={2}>
+                      <Text style={{ fontWeight: 600, fontSize: 13 }}>{t.tech}</Text>
+                      <Text size="small" tone="secondary">{t.desc}</Text>
+                    </Stack>
+                  </CardBody>
+                </Card>
+              ))}
+            </Grid>
+          </Stack>
+
+          <Stack gap={8}>
+            <SectionLabel>FUNZIONI DISPONIBILI NELL'APP</SectionLabel>
+            <Stack gap={6}>
+              {[
+                { icon: '✓', text: 'Dashboard con figli e alert in tempo reale', tone: 'success' },
+                { icon: '✓', text: 'Lista pagamenti e download ricevute', tone: 'success' },
+                { icon: '✓', text: 'Firma contratto di iscrizione con OTP', tone: 'success' },
+                { icon: '✓', text: 'Upload documenti dalla fotocamera', tone: 'success' },
+                { icon: '✓', text: 'Push notification per scadenze e firme', tone: 'success' },
+                { icon: '✓', text: 'Store e ordini con Apple/Google Pay', tone: 'success' },
+                { icon: '~', text: 'Biometria FaceID/TouchID per login veloce', tone: 'warning' },
+                { icon: '~', text: 'QR code per collegamento figlio da scuola', tone: 'warning' },
+              ].map(f => (
+                <Row key={f.text} gap={8}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: f.tone === 'success' ? C.success : C.warning, flexShrink: 0, width: 14 }}>{f.icon}</span>
+                  <Text size="small">{f.text}</Text>
+                </Row>
+              ))}
+            </Stack>
+          </Stack>
+
+          <Card accent={C.accent}>
+            <CardBody>
+              <Stack gap={6}>
+                <Text style={{ fontWeight: 700, fontSize: 14 }}>Quanto ci vuole per costruirla?</Text>
+                <Text size="small" tone="secondary">
+                  Con la base web già pronta, il porting in React Native richiede tipicamente
+                  <strong style={{ color: C.text }}> 6–10 settimane</strong> per una v1 con le funzioni core.
+                  Il 70% della logica (API calls, validazione, state management) si riusa direttamente.
+                </Text>
+                <Row gap={8} style={{ flexWrap: 'wrap', marginTop: 4 }}>
+                  <Pill size="sm" tone="info" active>iOS + Android simultanei</Pill>
+                  <Pill size="sm" tone="success" active>Shared API layer</Pill>
+                  <Pill size="sm">OTA updates con Expo</Pill>
+                </Row>
+              </Stack>
+            </CardBody>
+          </Card>
+        </Stack>
+      </Grid>
+    </Stack>
+  )
+}
+
 // ─── APP SHELL ────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [screen, setScreen] = useState('signup')
+  const [themeMode, setThemeMode] = useState('dark')
+  const [themeKey, setThemeKey] = useState(0)
   const isApp = APP_SCREENS.includes(screen)
   const isEnrollFlow = ENROLL_FLOW.includes(screen)
+
+  const toggleTheme = () => {
+    const next = themeMode === 'dark' ? 'light' : 'dark'
+    Object.assign(C, next === 'light' ? LIGHT_C : DARK_C)
+    document.body.style.background = next === 'light' ? LIGHT_C.bg : DARK_C.bg
+    document.body.style.color = next === 'light' ? LIGHT_C.text : DARK_C.text
+    setThemeMode(next)
+    setThemeKey(k => k + 1)
+  }
+
+  useEffect(() => {
+    document.body.style.background = C.bg
+    document.body.style.color = C.text
+  }, [])
 
   const renderScreen = () => {
     switch (screen) {
@@ -1801,12 +2146,13 @@ export default function App() {
       case 'promotions': return <ScreenPromotions goTo={setScreen} />
       case 'account': return <ScreenAccount goTo={setScreen} />
       case 'documents': return <ScreenDocuments goTo={setScreen} />
+      case 'app-preview': return <ScreenAppPreview />
       default: return null
     }
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, color: C.text }}>
+    <div key={themeKey} style={{ minHeight: '100vh', background: C.bg, color: C.text }}>
       {/* Top nav */}
       <div style={{
         borderBottom: `1px solid ${C.border}`,
@@ -1817,13 +2163,26 @@ export default function App() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Row gap={0} style={{ height: 52, justifyContent: 'space-between' }}>
             <Row gap={10}>
-              <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px', color: C.text }}>ScuolaPay</span>
+              <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: '-0.3px', color: C.accent }}>ScuolaPay</span>
               <span style={{ width: 1, height: 16, background: C.border, display: 'inline-block' }} />
               <Text tone="tertiary" size="small">Mockup area account</Text>
             </Row>
-            <Text tone="tertiary" size="small" style={{ fontStyle: 'italic' }}>
-              {SCREEN_LABELS[screen]}
-            </Text>
+            <Row gap={10}>
+              <Text tone="tertiary" size="small" style={{ fontStyle: 'italic' }}>
+                {SCREEN_LABELS[screen]}
+              </Text>
+              <button
+                onClick={toggleTheme}
+                style={{
+                  padding: '5px 12px', borderRadius: 7, cursor: 'pointer',
+                  border: `1px solid ${C.border}`, background: C.fill,
+                  color: C.textSec, fontSize: 12, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
+                {themeMode === 'dark' ? '☀ Chiaro' : '● Scuro'}
+              </button>
+            </Row>
           </Row>
         </div>
       </div>
@@ -1839,7 +2198,7 @@ export default function App() {
               ))}
               <span style={{ width: 1, height: 16, background: C.border, margin: '0 4px', flexShrink: 0 }} />
               <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>APP</Text>
-              {['dashboard', 'child-detail', 'payments', 'orders', 'promotions', 'enrollment', 'guest-success'].map(s => (
+              {['dashboard', 'child-detail', 'payments', 'orders', 'promotions', 'app-preview', 'enrollment', 'guest-success'].map(s => (
                 <Pill key={s} active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
               ))}
             </Row>
