@@ -70,10 +70,12 @@ const SCREEN_LABELS = {
   account: 'Profilo e sicurezza',
   documents: 'Documenti',
   'app-preview': 'Anteprima App Mobile',
+  contracts: 'Contratti firmati',
+  messages: 'Messaggi dalla scuola',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child', 'add-child-invite', 'add-child-verify']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents', 'app-preview']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents', 'contracts', 'messages', 'app-preview']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
@@ -111,8 +113,10 @@ const SIDEBAR_ITEMS = [
   { id: 'enrollment-detail', label: 'Iscrizioni' },
   { id: 'payments',        label: 'Pagamenti' },
   { id: 'orders',          label: 'Ordini' },
+  { id: 'messages',        label: 'Messaggi' },
   { id: 'promotions',      label: 'Offerte & Store' },
   { id: 'documents',       label: 'Documenti' },
+  { id: 'contracts',       label: 'Contratti firmati' },
   { id: 'account',         label: 'Profilo e sicurezza' },
 ]
 
@@ -629,6 +633,33 @@ function ScreenAddChildVerify({ goTo }) {
 }
 
 
+const CONTRACTS_DATA = [
+  { id: 'ct1', child: 'Marco',  school: 'Sc. Primaria G. Verdi',    type: 'Contratto di iscrizione', year: '2025/2026', signers: ['Maria Rossi', 'Luca Rossi'], date: '20 apr 2025', status: 'Valido',   file: 'contratto_marco_2025.pdf' },
+  { id: 'ct2', child: 'Marco',  school: 'Sc. Primaria G. Verdi',    type: 'Contratto di iscrizione', year: '2024/2025', signers: ['Maria Rossi', 'Luca Rossi'], date: '12 mar 2024', status: 'Scaduto',  file: 'contratto_marco_2024.pdf' },
+  { id: 'ct3', child: 'Marco',  school: 'Sc. Primaria G. Verdi',    type: 'Regolamento mensa',       year: '2024/2025', signers: ['Maria Rossi'],                date: '05 set 2024', status: 'Valido',   file: 'regolamento_mensa_marco.pdf' },
+  { id: 'ct4', child: 'Marco',  school: 'Sc. Primaria G. Verdi',    type: 'Contratto di iscrizione', year: '2023/2024', signers: ['Maria Rossi', 'Luca Rossi'], date: '08 feb 2023', status: 'Scaduto',  file: 'contratto_marco_2023.pdf' },
+  { id: 'ct5', child: 'Sofia',  school: 'Sc. Infanzia Arcobaleno',  type: 'Contratto di iscrizione', year: '2025/2026', signers: ['Maria Rossi'],                date: '18 feb 2025', status: 'Valido',   file: 'contratto_sofia_2025.pdf' },
+  { id: 'ct6', child: 'Sofia',  school: 'Sc. Infanzia Arcobaleno',  type: 'Contratto di iscrizione', year: '2024/2025', signers: ['Maria Rossi'],                date: '10 feb 2024', status: 'Scaduto',  file: 'contratto_sofia_2024.pdf' },
+  { id: 'ct7', child: 'Giulia', school: 'Sc. Media L. da Vinci',    type: 'Bozza iscrizione',        year: '2025/2026', signers: [],                            date: '—',           status: 'Bozza',    file: null },
+]
+
+const MESSAGES_DATA = [
+  { id: 'msg1', from: 'Sc. Primaria G. Verdi',   child: 'Marco',  type: 'urgente',     subject: 'Sciopero servizio mensa – venerdì 25 aprile',         date: '20 apr 2025', read: false,
+    body: 'Si comunica che venerdì 25 aprile il servizio mensa sarà sospeso per adesione allo sciopero del personale ATA. Gli alunni potranno essere ritirati entro le ore 12:30 oppure portare il pasto da casa. Ci scusiamo per il disagio.' },
+  { id: 'msg2', from: 'Sc. Infanzia Arcobaleno', child: 'Sofia',  type: 'comunicazione', subject: 'Calendario fine anno scolastico 2024/2025',             date: '18 apr 2025', read: false,
+    body: 'Si comunica che le attività didattiche termineranno il 6 giugno 2025. Il saggio di fine anno si terrà il 4 giugno alle ore 17:00 presso l\'auditorium della scuola. La partecipazione dei genitori è gradita.' },
+  { id: 'msg3', from: 'Sc. Media L. da Vinci',   child: 'Giulia', type: 'azione',       subject: 'Completare l\'iscrizione entro il 30 aprile 2025',      date: '17 apr 2025', read: false,
+    body: 'La invitiamo a completare e inviare la pratica di iscrizione per l\'A.S. 2025/2026 entro e non oltre il 30 aprile 2025. Dopo tale data non sarà più possibile garantire la disponibilità di posto. Per assistenza contattare la segreteria.' },
+  { id: 'msg4', from: 'Sc. Primaria G. Verdi',   child: 'Marco',  type: 'informativa',  subject: 'Lista libri e materiali 4ª A – A.S. 2025/2026',         date: '15 apr 2025', read: true,
+    body: 'Di seguito la lista del materiale scolastico adottato dalla classe 4ª A per il prossimo anno scolastico. È possibile acquistare il kit completo direttamente tramite ScuolaPay Store entro il 31 maggio per ricevere tutto a settembre.' },
+  { id: 'msg5', from: 'Sc. Primaria G. Verdi',   child: 'Marco',  type: 'comunicazione', subject: 'Colloqui genitori – aprile 2025',                      date: '10 apr 2025', read: true,
+    body: 'I colloqui individuali con i docenti si terranno mercoledì 23 aprile dalle ore 16:00 alle ore 18:30. La prenotazione del proprio slot è disponibile sul registro elettronico. Si invita a prenotare entro domenica 20 aprile.' },
+  { id: 'msg6', from: 'ScuolaPay',               child: null,     type: 'sistema',      subject: 'La tua dichiarazione spese 2024 è disponibile',         date: '10 gen 2025', read: true,
+    body: 'La dichiarazione delle spese scolastiche detraibili per l\'anno fiscale 2024 è ora disponibile nella sezione "Profilo e sicurezza → Dichiarazione spese". Puoi scaricarla in PDF e allegarla alla tua dichiarazione dei redditi (mod. 730).' },
+  { id: 'msg7', from: 'Sc. Infanzia Arcobaleno', child: 'Sofia',  type: 'urgente',      subject: 'Chiusura straordinaria lunedì 28 aprile',               date: '24 apr 2025', read: true,
+    body: 'Si comunica la chiusura straordinaria della scuola per lunedì 28 aprile 2025 per lavori di manutenzione straordinaria. Il servizio riprenderà regolarmente martedì 29 aprile.' },
+]
+
 const DOCUMENTS_DATA = {
   Marco: [
     { label: "Carta d'identità genitore",   note: 'Fronte e retro — PDF/JPG',                   initialStatus: 'uploaded', fileName: 'carta_identita_maria_rossi.pdf', required: true,  context: 'Iscrizione 2025/2026' },
@@ -647,6 +678,303 @@ const DOCUMENTS_DATA = {
     { label: 'Codice fiscale studente',      note: 'Tessera sanitaria o equivalente',             initialStatus: 'idle',     fileName: null,                            required: true,  context: 'Iscrizione 2025/2026' },
     { label: 'Certificazione DSA/BES',       note: 'Solo se applicabile',                         initialStatus: 'idle',     fileName: null,                            required: false, context: 'Iscrizione 2025/2026' },
   ],
+}
+
+function ScreenContracts({ goTo }) {
+  const [selectedChild, setSelectedChild] = useState('Marco')
+  const [openId, setOpenId] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('Tutti')
+
+  const contracts = CONTRACTS_DATA.filter(c =>
+    c.child === selectedChild &&
+    (statusFilter === 'Tutti' || c.status === statusFilter)
+  )
+  const child = CHILDREN_DATA.find(c => c.name === selectedChild)
+
+  const statusToneLocal = s => s === 'Valido' ? 'success' : s === 'Bozza' ? 'info' : 'neutral'
+
+  return (
+    <Stack gap={24}>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Stack gap={4}>
+          <H2>Contratti firmati</H2>
+          <Text tone="secondary">Archivio di tutti i contratti e regolamenti sottoscritti con le scuole.</Text>
+        </Stack>
+      </Row>
+
+      {/* Child switcher */}
+      <Stack gap={8}>
+        <SectionLabel>SELEZIONA FIGLIO</SectionLabel>
+        <Row gap={10} style={{ flexWrap: 'wrap' }}>
+          {CHILDREN_DATA.map(c => (
+            <div key={c.name} onClick={() => setSelectedChild(c.name)} style={{
+              padding: '8px 14px', borderRadius: 10, cursor: 'pointer',
+              border: `1.5px solid ${selectedChild === c.name ? c.color : C.border}`,
+              background: selectedChild === c.name ? `${c.color}12` : C.bgRaised,
+              display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.15s',
+            }}>
+              <Avatar name={`${c.name} ${c.surname}`} color={c.color} size={26} />
+              <Text style={{ fontWeight: selectedChild === c.name ? 700 : 500, fontSize: 13, color: selectedChild === c.name ? c.color : C.text }}>
+                {c.name}
+              </Text>
+              <Pill size="sm" style={{ marginLeft: 2 }}>
+                {CONTRACTS_DATA.filter(ct => ct.child === c.name).length}
+              </Pill>
+            </div>
+          ))}
+        </Row>
+      </Stack>
+
+      {/* Stats + filters */}
+      <Row gap={16} style={{ justifyContent: 'space-between', flexWrap: 'wrap', alignItems: 'center' }}>
+        <Row gap={6} style={{ flexWrap: 'wrap' }}>
+          {['Tutti', 'Valido', 'Scaduto', 'Bozza'].map(f => (
+            <Pill key={f} active={statusFilter === f} onClick={() => setStatusFilter(f)}>{f}</Pill>
+          ))}
+        </Row>
+        <Grid columns={3} gap={10}>
+          <Stat value={CONTRACTS_DATA.filter(c => c.child === selectedChild && c.status === 'Valido').length}  label="Validi" tone="success" style={{ padding: '10px 14px' }} />
+          <Stat value={CONTRACTS_DATA.filter(c => c.child === selectedChild && c.status === 'Scaduto').length} label="Scaduti" style={{ padding: '10px 14px' }} />
+          <Stat value={CONTRACTS_DATA.filter(c => c.child === selectedChild && c.status === 'Bozza').length}   label="Bozze" tone="info" style={{ padding: '10px 14px' }} />
+        </Grid>
+      </Row>
+
+      {/* Contracts list */}
+      <Stack gap={10}>
+        {contracts.length === 0 && (
+          <div style={{ padding: '32px 16px', textAlign: 'center', color: C.textTer, fontSize: 13 }}>
+            Nessun contratto trovato per i filtri selezionati.
+          </div>
+        )}
+        {contracts.map(ct => {
+          const isOpen = openId === ct.id
+          return (
+            <Card key={ct.id} accent={ct.status === 'Valido' ? child?.color : ct.status === 'Bozza' ? C.info : C.border}>
+              <div onClick={() => setOpenId(isOpen ? null : ct.id)} style={{ cursor: 'pointer' }}>
+                <CardBody>
+                  <Row gap={12} style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                    <Row gap={12}>
+                      {/* File icon */}
+                      <div style={{ width: 38, height: 38, borderRadius: 8, background: ct.status === 'Valido' ? `${child?.color}18` : C.fill, border: `1px solid ${ct.status === 'Valido' ? child?.color + '33' : C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+                        {ct.file ? '📄' : '📝'}
+                      </div>
+                      <Stack gap={3}>
+                        <Text style={{ fontWeight: 700, fontSize: 14 }}>{ct.type}</Text>
+                        <Text size="small" tone="secondary">{ct.school} · A.S. {ct.year}</Text>
+                        {ct.date !== '—' && <Text size="small" tone="tertiary">Firmato il {ct.date}</Text>}
+                      </Stack>
+                    </Row>
+                    <Row gap={10} style={{ flexShrink: 0 }}>
+                      <Pill size="sm" tone={statusToneLocal(ct.status)} active>{ct.status}</Pill>
+                      {ct.file && (
+                        <Button variant="secondary" onClick={e => e.stopPropagation()}>↓ Scarica PDF</Button>
+                      )}
+                      {ct.status === 'Bozza' && (
+                        <Button variant="primary" onClick={e => { e.stopPropagation(); goTo('enrollment-data') }}>Completa →</Button>
+                      )}
+                      <span style={{ color: C.textTer, fontSize: 12, userSelect: 'none' }}>{isOpen ? '▲' : '▼'}</span>
+                    </Row>
+                  </Row>
+                </CardBody>
+              </div>
+
+              {isOpen && ct.file && (
+                <>
+                  <Divider />
+                  <CardBody>
+                    <Stack gap={12}>
+                      <Grid columns={2} gap={10}>
+                        <Stack gap={2}>
+                          <Label>Tipo documento</Label>
+                          <Text style={{ fontSize: 13 }}>{ct.type}</Text>
+                        </Stack>
+                        <Stack gap={2}>
+                          <Label>Anno scolastico</Label>
+                          <Text style={{ fontSize: 13 }}>{ct.year}</Text>
+                        </Stack>
+                        <Stack gap={2}>
+                          <Label>Data firma</Label>
+                          <Text style={{ fontSize: 13 }}>{ct.date}</Text>
+                        </Stack>
+                        <Stack gap={2}>
+                          <Label>File</Label>
+                          <Text style={{ fontSize: 13, color: C.accent }}>{ct.file}</Text>
+                        </Stack>
+                      </Grid>
+                      <Stack gap={4}>
+                        <Label>Firmatari</Label>
+                        <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                          {ct.signers.map(s => (
+                            <Row key={s} gap={6}>
+                              <div style={{ width: 8, height: 8, borderRadius: 4, background: C.success, flexShrink: 0 }} />
+                              <Text size="small">{s}</Text>
+                            </Row>
+                          ))}
+                        </Row>
+                      </Stack>
+                      <Row gap={8}>
+                        <Button variant="primary">↓ Scarica PDF firmato</Button>
+                        <Button variant="secondary">Anteprima</Button>
+                      </Row>
+                    </Stack>
+                  </CardBody>
+                </>
+              )}
+            </Card>
+          )
+        })}
+      </Stack>
+
+      <div style={{ padding: '12px 16px', background: C.fill, borderRadius: 8 }}>
+        <Text size="small" tone="secondary">
+          I contratti firmati sono conservati in modo sicuro per 10 anni dalla data di sottoscrizione, in conformità alla normativa vigente. 
+          Non è possibile eliminare un contratto firmato.
+        </Text>
+      </div>
+    </Stack>
+  )
+}
+
+function ScreenMessages({ goTo }) {
+  const [openId, setOpenId] = useState(null)
+  const [typeFilter, setTypeFilter] = useState('Tutti')
+  const [childFilter, setChildFilter] = useState('Tutti')
+
+  const typeConfig = {
+    urgente:      { label: 'Urgente',       tone: 'danger',  icon: '⚠️' },
+    azione:       { label: 'Azione richiesta', tone: 'warning', icon: '✏️' },
+    comunicazione:{ label: 'Comunicazione', tone: 'info',    icon: '📢' },
+    informativa:  { label: 'Informativa',   tone: 'neutral', icon: 'ℹ️' },
+    sistema:      { label: 'ScuolaPay',     tone: 'neutral', icon: '🔔' },
+  }
+
+  const filtered = MESSAGES_DATA.filter(m =>
+    (typeFilter === 'Tutti' || m.type === typeFilter) &&
+    (childFilter === 'Tutti' || m.child === childFilter || (childFilter === 'Scuolapay' && m.child === null))
+  )
+
+  const unread = MESSAGES_DATA.filter(m => !m.read).length
+
+  return (
+    <Stack gap={24}>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <Stack gap={4}>
+          <Row gap={10}>
+            <H2>Messaggi</H2>
+            {unread > 0 && (
+              <div style={{ width: 22, height: 22, borderRadius: 11, background: C.danger, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                {unread}
+              </div>
+            )}
+          </Row>
+          <Text tone="secondary">Comunicazioni e avvisi dalle scuole dei tuoi figli.</Text>
+        </Stack>
+        <Button variant="secondary">Segna tutti come letti</Button>
+      </Row>
+
+      {/* Unread alert */}
+      {unread > 0 && (
+        <Alert type="warning" title={`${unread} messaggi non letti`} description="Hai comunicazioni importanti dalle scuole che non hai ancora letto." />
+      )}
+
+      {/* Filters */}
+      <Row gap={16} style={{ flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <Stack gap={5}>
+          <SectionLabel>TIPO</SectionLabel>
+          <Row gap={6} style={{ flexWrap: 'wrap' }}>
+            {['Tutti', 'urgente', 'azione', 'comunicazione', 'informativa', 'sistema'].map(f => (
+              <Pill key={f} active={typeFilter === f} tone={f !== 'Tutti' && typeFilter === f ? typeConfig[f]?.tone : 'neutral'} onClick={() => setTypeFilter(f)}>
+                {f === 'Tutti' ? 'Tutti' : typeConfig[f]?.label}
+              </Pill>
+            ))}
+          </Row>
+        </Stack>
+        <Stack gap={5}>
+          <SectionLabel>FIGLIO</SectionLabel>
+          <Row gap={6} style={{ flexWrap: 'wrap' }}>
+            {['Tutti', ...CHILDREN_DATA.map(c => c.name)].map(f => (
+              <Pill key={f} active={childFilter === f} onClick={() => setChildFilter(f)}>{f}</Pill>
+            ))}
+          </Row>
+        </Stack>
+      </Row>
+
+      {/* Messages list */}
+      <Stack gap={8}>
+        {filtered.length === 0 && (
+          <div style={{ padding: '32px 16px', textAlign: 'center', color: C.textTer, fontSize: 13 }}>Nessun messaggio trovato.</div>
+        )}
+        {filtered.map(msg => {
+          const cfg = typeConfig[msg.type] || typeConfig.informativa
+          const isOpen = openId === msg.id
+          const childColor = msg.child ? CHILD_COLOR[msg.child] : C.textSec
+
+          return (
+            <Card key={msg.id} style={{ opacity: msg.read && !isOpen ? 0.8 : 1 }}>
+              <div onClick={() => setOpenId(isOpen ? null : msg.id)} style={{ cursor: 'pointer' }}>
+                <CardBody>
+                  <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <Row gap={12} style={{ flex: 1, minWidth: 0 }}>
+                      {/* Unread dot */}
+                      <div style={{ width: 8, height: 8, borderRadius: 4, background: msg.read ? 'transparent' : C.accent, flexShrink: 0, marginTop: 5 }} />
+                      <Stack gap={5} style={{ flex: 1, minWidth: 0 }}>
+                        <Row gap={8} style={{ flexWrap: 'wrap' }}>
+                          <Text style={{ fontWeight: msg.read ? 500 : 700, fontSize: 14 }}>{msg.subject}</Text>
+                          <Pill size="sm" tone={cfg.tone} active={!msg.read}>{cfg.icon} {cfg.label}</Pill>
+                        </Row>
+                        <Row gap={8}>
+                          <Text size="small" tone="secondary">{msg.from}</Text>
+                          {msg.child && (
+                            <Row gap={4}>
+                              <div style={{ width: 1, height: 12, background: C.border }} />
+                              <Avatar name={msg.child} color={childColor} size={16} />
+                              <Text size="small" tone="secondary">{msg.child}</Text>
+                            </Row>
+                          )}
+                        </Row>
+                      </Stack>
+                    </Row>
+                    <Row gap={8} style={{ flexShrink: 0, alignItems: 'flex-start' }}>
+                      <Text size="small" tone="tertiary" style={{ whiteSpace: 'nowrap' }}>{msg.date}</Text>
+                      <span style={{ color: C.textTer, fontSize: 12, userSelect: 'none' }}>{isOpen ? '▲' : '▼'}</span>
+                    </Row>
+                  </Row>
+                </CardBody>
+              </div>
+
+              {isOpen && (
+                <>
+                  <Divider />
+                  <CardBody style={{ background: C.bgElevated }}>
+                    <Stack gap={14}>
+                      <div style={{ padding: '14px 16px', background: C.bgRaised, borderRadius: 8, border: `1px solid ${C.border}`, lineHeight: 1.7 }}>
+                        <Text size="small" tone="secondary">{msg.body}</Text>
+                      </div>
+                      <Row gap={8} style={{ justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                        <Row gap={8}>
+                          {msg.type === 'azione' && (
+                            <Button variant="primary" onClick={() => goTo('enrollment-data')}>Completa iscrizione →</Button>
+                          )}
+                          {msg.type === 'sistema' && msg.subject.includes('dichiarazione') && (
+                            <Button variant="primary" onClick={() => goTo('account')}>Vai alla dichiarazione →</Button>
+                          )}
+                          <Button variant="secondary">Rispondi</Button>
+                        </Row>
+                        <Row gap={8}>
+                          <Text size="small" tone="tertiary">Ricevuto: {msg.date}</Text>
+                          {!msg.read && <Pill size="sm" tone="info" active>Non letto</Pill>}
+                        </Row>
+                      </Row>
+                    </Stack>
+                  </CardBody>
+                </>
+              )}
+            </Card>
+          )
+        })}
+      </Stack>
+    </Stack>
+  )
 }
 
 function ScreenDocuments({ goTo }) {
@@ -1799,10 +2127,10 @@ const MOB = {
 
 function MobileScreen({ activeTab, setActiveTab }) {
   const tabs = [
-    { id: 'home',    icon: '⊞', label: 'Home' },
-    { id: 'pay',     icon: '💳', label: 'Pagamenti' },
-    { id: 'enroll',  icon: '📋', label: 'Iscrizioni' },
-    { id: 'profile', icon: '👤', label: 'Profilo' },
+    { id: 'home',     icon: '⊞', label: 'Home' },
+    { id: 'messages', icon: '💬', label: 'Messaggi', badge: MESSAGES_DATA.filter(m => !m.read).length },
+    { id: 'enroll',   icon: '📋', label: 'Iscrizioni' },
+    { id: 'profile',  icon: '👤', label: 'Profilo' },
   ]
 
   const pill = (label, color, bg) => (
@@ -1869,27 +2197,39 @@ function MobileScreen({ activeTab, setActiveTab }) {
           </div>
         )}
 
-        {activeTab === 'pay' && (
+        {activeTab === 'messages' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, color: MOB.text, letterSpacing: '-0.5px' }}>Pagamenti</div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {['Tutti','Marco','Sofia','Giulia'].map(f => (
-                <span key={f} style={{ fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: f==='Tutti'?MOB.accent:'transparent', color: f==='Tutti'?'#fff':MOB.textSec, border: `1px solid ${f==='Tutti'?MOB.accent:MOB.border}` }}>{f}</span>
-              ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: MOB.text, letterSpacing: '-0.5px' }}>Messaggi</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 22, height: 22, borderRadius: 11, background: MOB.danger, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+                  {MESSAGES_DATA.filter(m => !m.read).length}
+                </div>
+                <span style={{ fontSize: 11, color: MOB.textSec }}>non letti</span>
+              </div>
             </div>
             <div style={{ background: MOB.raised, borderRadius: 12, border: `1px solid ${MOB.border}`, overflow: 'hidden' }}>
-              {PAYMENTS_DATA.slice(0,6).map((p,i) => (
-                <div key={p.id} style={{ padding: '12px 14px', borderBottom: i<5?`1px solid ${MOB.border}`:'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 500, color: MOB.text }}>{p.desc}</div>
-                    <div style={{ fontSize: 10, color: MOB.textSec, marginTop: 2 }}>{p.child} · {p.date}</div>
+              {MESSAGES_DATA.slice(0,5).map((msg, i) => {
+                const typeColors = { urgente: MOB.danger, azione: MOB.warning, comunicazione: '#2563eb', informativa: MOB.textSec, sistema: MOB.textSec }
+                const typeIcons  = { urgente: '⚠️', azione: '✏️', comunicazione: '📢', informativa: 'ℹ️', sistema: '🔔' }
+                const tc = typeColors[msg.type] || MOB.textSec
+                return (
+                  <div key={msg.id} style={{ padding: '11px 14px', borderBottom: i<4?`1px solid ${MOB.border}`:'none', display: 'flex', gap: 10, alignItems: 'flex-start', background: msg.read ? MOB.raised : `${tc}07` }}>
+                    <div style={{ width: 7, height: 7, borderRadius: 4, background: msg.read ? 'transparent' : tc, flexShrink: 0, marginTop: 5 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6 }}>
+                        <div style={{ fontSize: 12, fontWeight: msg.read ? 500 : 700, color: MOB.text, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{msg.subject}</div>
+                        <div style={{ fontSize: 10, color: MOB.textSec, whiteSpace: 'nowrap', flexShrink: 0 }}>{msg.date.split(' ').slice(0,2).join(' ')}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, marginTop: 4, alignItems: 'center' }}>
+                        <span style={{ fontSize: 10 }}>{typeIcons[msg.type]}</span>
+                        <span style={{ fontSize: 10, color: tc, fontWeight: 600 }}>{msg.from.split(' ').slice(0,3).join(' ')}</span>
+                        {msg.child && <span style={{ fontSize: 10, color: MOB.textTer }}>· {msg.child}</span>}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: MOB.text }}>{p.amount}</div>
-                    {pill(p.status, p.status==='Completato'?MOB.success:MOB.warning, p.status==='Completato'?'rgba(22,163,74,0.1)':'rgba(217,119,6,0.1)')}
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -1975,8 +2315,11 @@ function MobileScreen({ activeTab, setActiveTab }) {
       {/* Bottom tab bar */}
       <div style={{ height: 68, background: MOB.raised, borderTop: `1px solid ${MOB.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-around', padding: '0 8px 8px' }}>
         {tabs.map(t => (
-          <div key={t.id} onClick={() => setActiveTab(t.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '4px 16px', cursor: 'pointer' }}>
+          <div key={t.id} onClick={() => setActiveTab(t.id)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '4px 12px', cursor: 'pointer', position: 'relative' }}>
             <span style={{ fontSize: 20 }}>{t.icon}</span>
+            {t.badge > 0 && (
+              <div style={{ position: 'absolute', top: 0, right: 6, width: 16, height: 16, borderRadius: 8, background: MOB.danger, fontSize: 9, fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{t.badge}</div>
+            )}
             <span style={{ fontSize: 10, fontWeight: activeTab===t.id?700:400, color: activeTab===t.id?MOB.accent:MOB.textSec }}>{t.label}</span>
             {activeTab===t.id && <div style={{ width: 4, height: 4, borderRadius: 2, background: MOB.accent }} />}
           </div>
@@ -2146,6 +2489,8 @@ export default function App() {
       case 'promotions': return <ScreenPromotions goTo={setScreen} />
       case 'account': return <ScreenAccount goTo={setScreen} />
       case 'documents': return <ScreenDocuments goTo={setScreen} />
+      case 'contracts': return <ScreenContracts goTo={setScreen} />
+      case 'messages': return <ScreenMessages goTo={setScreen} />
       case 'app-preview': return <ScreenAppPreview />
       default: return null
     }
@@ -2198,8 +2543,15 @@ export default function App() {
               ))}
               <span style={{ width: 1, height: 16, background: C.border, margin: '0 4px', flexShrink: 0 }} />
               <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>APP</Text>
-              {['dashboard', 'child-detail', 'payments', 'orders', 'promotions', 'app-preview', 'enrollment', 'guest-success'].map(s => (
-                <Pill key={s} active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
+              {['dashboard', 'child-detail', 'payments', 'orders', 'documents', 'contracts', 'messages', 'promotions', 'app-preview', 'enrollment', 'guest-success'].map(s => (
+                <span key={s} style={{ position: 'relative', display: 'inline-flex' }}>
+                  <Pill active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
+                  {s === 'messages' && MESSAGES_DATA.filter(m => !m.read).length > 0 && (
+                    <span style={{ position: 'absolute', top: -4, right: -4, width: 16, height: 16, borderRadius: 8, background: C.danger, fontSize: 9, fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                      {MESSAGES_DATA.filter(m => !m.read).length}
+                    </span>
+                  )}
+                </span>
               ))}
             </Row>
             <Row gap={6} style={{ flexWrap: 'wrap', alignItems: 'center' }}>
@@ -2228,24 +2580,33 @@ export default function App() {
               </Stack>
               <Divider style={{ marginBottom: 10 }} />
               <Stack gap={1}>
-                {SIDEBAR_ITEMS.map((item, i) => (
-                  <div
-                    key={item.label + i}
-                    onClick={() => setScreen(item.id)}
-                    style={{
-                      padding: '7px 10px', borderRadius: 6, cursor: 'pointer',
-                      background: screen === item.id ? C.fill : 'transparent',
-                      transition: 'background 0.1s',
-                    }}
-                  >
-                    <Text
-                      size="small"
-                      style={{ fontWeight: screen === item.id ? 500 : 400, color: screen === item.id ? C.text : C.textSec }}
+                {SIDEBAR_ITEMS.map((item, i) => {
+                  const unread = item.id === 'messages' ? MESSAGES_DATA.filter(m => !m.read).length : 0
+                  return (
+                    <div
+                      key={item.label + i}
+                      onClick={() => setScreen(item.id)}
+                      style={{
+                        padding: '7px 10px', borderRadius: 6, cursor: 'pointer',
+                        background: screen === item.id ? C.fill : 'transparent',
+                        transition: 'background 0.1s',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      }}
                     >
-                      {item.label}
-                    </Text>
-                  </div>
-                ))}
+                      <Text
+                        size="small"
+                        style={{ fontWeight: screen === item.id ? 500 : 400, color: screen === item.id ? C.text : C.textSec }}
+                      >
+                        {item.label}
+                      </Text>
+                      {unread > 0 && (
+                        <div style={{ width: 18, height: 18, borderRadius: 9, background: C.danger, fontSize: 10, fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {unread}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </Stack>
             </div>
 
