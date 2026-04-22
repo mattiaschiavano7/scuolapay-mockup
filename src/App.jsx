@@ -72,10 +72,11 @@ const SCREEN_LABELS = {
   'app-preview': 'Anteprima App Mobile',
   contracts: 'Contratti firmati',
   messages: 'Messaggi dalla scuola',
+  pagopa: 'Paga con PagoPA',
 }
 
 const AUTH_FLOW = ['signup', 'verify', 'recovery', 'recovery-empty', 'profile', 'add-child', 'add-child-invite', 'add-child-verify']
-const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents', 'contracts', 'messages', 'app-preview']
+const APP_SCREENS = ['dashboard', 'child-detail', 'payments', 'orders', 'enrollment-detail', 'promotions', 'account', 'documents', 'contracts', 'messages', 'pagopa', 'app-preview']
 const ENROLL_FLOW = ['enrollment-overview', 'enrollment-data', 'enrollment-signatures', 'enrollment-sign-contract', 'enrollment-sign-pending', 'enrollment-payment', 'enrollment-documents', 'enrollment-confirmation']
 
 const CHILDREN_DATA = [
@@ -114,6 +115,7 @@ const SIDEBAR_ITEMS = [
   { id: 'payments',        label: 'Pagamenti' },
   { id: 'orders',          label: 'Ordini' },
   { id: 'messages',        label: 'Messaggi' },
+  { id: 'pagopa',          label: 'Paga con PagoPA' },
   { id: 'promotions',      label: 'Offerte & Store' },
   { id: 'documents',       label: 'Documenti' },
   { id: 'contracts',       label: 'Contratti firmati' },
@@ -2118,6 +2120,250 @@ function ScreenGuestSuccess({ goTo }) {
   )
 }
 
+// ─── PAGOPA ───────────────────────────────────────────────────────────────────
+const PAGOPA_BLUE = '#0066cc'
+const PAGOPA_FILL = 'rgba(0,102,204,0.08)'
+
+function ScreenPagoPA() {
+  const [method, setMethod] = useState('manual')   // 'upload' | 'manual'
+  const [step, setStep] = useState(1)              // 1 | 2 | 3
+  const [codiceEnte, setCodiceEnte] = useState('')
+  const [codiceAvviso, setCodiceAvviso] = useState('')
+  const [email, setEmail] = useState('maria.rossi@email.it')
+  const [payMethod, setPayMethod] = useState('carta')
+
+  const canProceed = codiceEnte.length >= 6 && codiceAvviso.length >= 10 && email.includes('@')
+
+  const mockInvoice = {
+    ente: 'I.C. Alessandro Manzoni',
+    causale: 'Mensa scolastica – Aprile 2025',
+    importo: '€ 78,00',
+    scadenza: '30 apr 2025',
+    cfEnte: '97123456789',
+    codiceAvviso: codiceAvviso || '300000000000000001',
+  }
+
+  if (step === 3) return (
+    <Stack gap={24} style={{ maxWidth: 560 }}>
+      <div style={{ padding: '32px 24px', borderRadius: 14, background: C.successFill, border: `1px solid ${C.success}`, textAlign: 'center' }}>
+        <Stack gap={10} style={{ alignItems: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: 28, background: C.success, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="26" height="20" viewBox="0 0 26 20" fill="none"><path d="M1 10l8 8L25 1" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </div>
+          <H2>Pagamento completato</H2>
+          <Text tone="secondary" style={{ textAlign: 'center' }}>
+            Il pagamento di <strong style={{ color: C.text }}>€ 78,00</strong> è stato acquisito correttamente tramite PagoPA.
+            Riceverai la ricevuta a <strong style={{ color: C.text }}>{email}</strong>.
+          </Text>
+        </Stack>
+      </div>
+      <Card>
+        <CardHeader trailing={<Pill tone="success" active size="sm">Pagato</Pill>}>Riepilogo pagamento</CardHeader>
+        <CardBody>
+          <Stack gap={7}>
+            {[
+              ['Ente beneficiario', mockInvoice.ente],
+              ['Causale', mockInvoice.causale],
+              ['Importo pagato', mockInvoice.importo],
+              ['Codice avviso', mockInvoice.codiceAvviso],
+              ['Data pagamento', '20 apr 2025, 15:42'],
+              ['Codice transazione PagoPA', 'PPAY-2025-04-0847X'],
+              ['Ricevuta inviata a', email],
+            ].map(([k,v]) => (
+              <Row key={k} gap={8} style={{ justifyContent: 'space-between' }}>
+                <Text size="small" tone="secondary">{k}</Text>
+                <Text size="small" style={{ fontWeight: 500, textAlign: 'right', maxWidth: 260 }}>{v}</Text>
+              </Row>
+            ))}
+          </Stack>
+        </CardBody>
+      </Card>
+      <Row gap={10}>
+        <Button variant="primary" onClick={() => { setStep(1); setCodiceEnte(''); setCodiceAvviso('') }}>Paga un altro avviso</Button>
+        <Button variant="secondary">↓ Scarica ricevuta PDF</Button>
+      </Row>
+    </Stack>
+  )
+
+  if (step === 2) return (
+    <Stack gap={24} style={{ maxWidth: 560 }}>
+      <Stack gap={4}>
+        <Row gap={8} style={{ alignItems: 'center' }}>
+          <Button variant="ghost" onClick={() => setStep(1)}>← Indietro</Button>
+        </Row>
+        <H2>Riepilogo pagamento</H2>
+        <Text tone="secondary">Verifica i dati prima di procedere con il pagamento.</Text>
+      </Stack>
+
+      <Card accent={PAGOPA_BLUE}>
+        <CardHeader trailing={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: PAGOPA_BLUE, letterSpacing: '-0.3px' }}>pago</span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: PAGOPA_BLUE }}>PA</span>
+          </div>
+        }>
+          Avviso di pagamento
+        </CardHeader>
+        <CardBody>
+          <Stack gap={10}>
+            <Grid columns={2} gap={12}>
+              <Stack gap={2}><Label>Ente beneficiario</Label><Text style={{ fontWeight: 600 }}>{mockInvoice.ente}</Text></Stack>
+              <Stack gap={2}><Label>CF Ente</Label><Text style={{ fontWeight: 600 }}>{mockInvoice.cfEnte}</Text></Stack>
+              <Stack gap={2}><Label>Causale</Label><Text style={{ fontWeight: 600 }}>{mockInvoice.causale}</Text></Stack>
+              <Stack gap={2}><Label>Scadenza</Label><Text style={{ fontWeight: 600, color: C.warning }}>{mockInvoice.scadenza}</Text></Stack>
+              <Stack gap={2}><Label>Codice avviso</Label><Text style={{ fontWeight: 600, fontFamily: 'monospace', fontSize: 13 }}>{mockInvoice.codiceAvviso}</Text></Stack>
+            </Grid>
+            <Divider />
+            <Row gap={8} style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text tone="secondary">Totale da pagare</Text>
+              <span style={{ fontSize: 28, fontWeight: 800, color: PAGOPA_BLUE, letterSpacing: '-1px' }}>{mockInvoice.importo}</span>
+            </Row>
+          </Stack>
+        </CardBody>
+      </Card>
+
+      <Stack gap={8}>
+        <H3>Metodo di pagamento</H3>
+        {[
+          { id: 'carta', label: 'Carta di credito / debito', desc: 'Visa, Mastercard, American Express' },
+          { id: 'pagopa-wallet', label: 'Wallet PagoPA', desc: 'Usa il tuo wallet già configurato su pagoPA' },
+          { id: 'bonifico', label: 'Bonifico bancario / CBILL', desc: 'Tramite home banking con il codice CBILL' },
+        ].map(m => (
+          <div key={m.id} onClick={() => setPayMethod(m.id)} style={{ padding: '12px 14px', borderRadius: 8, cursor: 'pointer', border: `1px solid ${payMethod === m.id ? PAGOPA_BLUE : C.border}`, background: payMethod === m.id ? PAGOPA_FILL : C.bgRaised }}>
+            <Row gap={10}>
+              <div style={{ width: 16, height: 16, borderRadius: 8, flexShrink: 0, border: `2px solid ${payMethod === m.id ? PAGOPA_BLUE : C.border}`, background: payMethod === m.id ? PAGOPA_BLUE : C.bgElevated, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {payMethod === m.id && <div style={{ width: 6, height: 6, borderRadius: 3, background: '#fff' }} />}
+              </div>
+              <Stack gap={1}>
+                <Text style={{ fontWeight: 500, fontSize: 13 }}>{m.label}</Text>
+                <Text size="small" tone="secondary">{m.desc}</Text>
+              </Stack>
+            </Row>
+          </div>
+        ))}
+      </Stack>
+
+      <Alert type="info" title="Pagamento sicuro tramite circuito PagoPA" description="I pagamenti PagoPA sono gestiti da Mooney S.p.a., istituto di moneta elettronica autorizzato dalla Banca d'Italia. ScuolaPay non trattiene dati della carta." />
+
+      <Row gap={10} style={{ justifyContent: 'flex-end' }}>
+        <Button variant="secondary" onClick={() => setStep(1)}>← Modifica dati</Button>
+        <Button variant="primary" style={{ background: PAGOPA_BLUE, borderColor: PAGOPA_BLUE }} onClick={() => setStep(3)}>
+          Paga {mockInvoice.importo} →
+        </Button>
+      </Row>
+    </Stack>
+  )
+
+  return (
+    <Stack gap={24}>
+      <Row gap={12} style={{ justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <Stack gap={4}>
+          <Row gap={10} style={{ alignItems: 'center' }}>
+            <H2>Paga con PagoPA</H2>
+            <div style={{ padding: '4px 10px', borderRadius: 6, background: PAGOPA_FILL, border: `1px solid ${PAGOPA_BLUE}33` }}>
+              <span style={{ fontSize: 13, fontWeight: 800, color: PAGOPA_BLUE, letterSpacing: '-0.3px' }}>pago</span>
+              <span style={{ fontSize: 13, fontWeight: 800, color: PAGOPA_BLUE }}>PA</span>
+            </div>
+          </Row>
+          <Text tone="secondary">Paga qualsiasi avviso scolastico PagoPA. Senza SPID, senza registrazione obbligatoria.</Text>
+        </Stack>
+      </Row>
+
+      <Alert type="success" title="Account collegato — email pre-compilata" description="Grazie all'account ScuolaPay la tua email è già inserita. Riceverai la ricevuta automaticamente." />
+
+      {/* Method toggle */}
+      <Stack gap={10}>
+        <SectionLabel>COME VUOI INSERIRE I DATI?</SectionLabel>
+        <Row gap={10}>
+          {[
+            { id: 'upload', label: '📄 Carica PDF avviso', desc: 'Carica il PDF o fotografa il QR code' },
+            { id: 'manual', label: '⌨️ Inserisci manualmente', desc: 'Digita codice ente e codice avviso' },
+          ].map(m => (
+            <div key={m.id} onClick={() => setMethod(m.id)} style={{ flex: 1, padding: '14px 16px', borderRadius: 10, cursor: 'pointer', border: `1.5px solid ${method === m.id ? PAGOPA_BLUE : C.border}`, background: method === m.id ? PAGOPA_FILL : C.bgRaised, transition: 'all 0.15s' }}>
+              <Stack gap={3}>
+                <Text style={{ fontWeight: 700, fontSize: 13, color: method === m.id ? PAGOPA_BLUE : C.text }}>{m.label}</Text>
+                <Text size="small" tone="secondary">{m.desc}</Text>
+              </Stack>
+            </div>
+          ))}
+        </Row>
+      </Stack>
+
+      {method === 'upload' ? (
+        <Stack gap={14} style={{ maxWidth: 560 }}>
+          <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: '40px 24px', textAlign: 'center', background: C.bgRaised, cursor: 'pointer' }}>
+            <Stack gap={8} style={{ alignItems: 'center' }}>
+              <div style={{ fontSize: 36 }}>📄</div>
+              <Text style={{ fontWeight: 600 }}>Trascina il PDF dell'avviso qui</Text>
+              <Text size="small" tone="secondary">oppure clicca per selezionare il file dal tuo dispositivo</Text>
+              <Button variant="secondary">Scegli file</Button>
+            </Stack>
+          </div>
+          <div style={{ padding: '14px 16px', background: C.fill, borderRadius: 8, textAlign: 'center' }}>
+            <Stack gap={6} style={{ alignItems: 'center' }}>
+              <div style={{ fontSize: 28 }}>📷</div>
+              <Text style={{ fontWeight: 600, fontSize: 13 }}>Oppure fotografa il QR code</Text>
+              <Text size="small" tone="secondary">Usa la fotocamera del dispositivo per scansionare il QR code sull'avviso cartaceo</Text>
+              <Button variant="secondary">Apri fotocamera</Button>
+            </Stack>
+          </div>
+        </Stack>
+      ) : (
+        <Stack gap={16} style={{ maxWidth: 560 }}>
+          <Field label="Codice ente creditore">
+            <Input placeholder="es. 00000000000" value={codiceEnte} onChange={setCodiceEnte} />
+          </Field>
+          <Field label="Codice avviso di pagamento">
+            <Input placeholder="es. 302000000000000000" value={codiceAvviso} onChange={setCodiceAvviso} />
+          </Field>
+          <Stack gap={5}>
+            <Field label="Email per la ricevuta">
+              <Input placeholder="nome@email.it" value={email} onChange={setEmail} type="email" />
+            </Field>
+            <Text size="small" tone="tertiary">Pre-compilata dal tuo account. Puoi modificarla.</Text>
+          </Stack>
+
+          <div style={{ padding: '12px 14px', background: C.fill, borderRadius: 8 }}>
+            <Text size="small" tone="secondary">
+              Trovi il <strong style={{ color: C.text }}>Codice ente creditore</strong> e il <strong style={{ color: C.text }}>Codice avviso</strong> nell'avviso di pagamento cartaceo ricevuto dalla scuola, oppure nel registro elettronico.
+            </Text>
+          </div>
+
+          <Button
+            variant="primary"
+            style={{ background: canProceed ? PAGOPA_BLUE : undefined, borderColor: canProceed ? PAGOPA_BLUE : undefined }}
+            disabled={!canProceed}
+            onClick={() => setStep(2)}
+          >
+            Verifica avviso e prosegui →
+          </Button>
+        </Stack>
+      )}
+
+      {/* Accepted payments note */}
+      <div style={{ padding: '14px 16px', background: C.bgRaised, border: `1px solid ${C.border}`, borderRadius: 10 }}>
+        <Row gap={16} style={{ flexWrap: 'wrap', alignItems: 'flex-start' }}>
+          <Stack gap={4} style={{ flex: 1, minWidth: 200 }}>
+            <Text style={{ fontWeight: 600, fontSize: 13 }}>Quali avvisi puoi pagare?</Text>
+            <Text size="small" tone="secondary">
+              Tutti gli avvisi PagoPA emessi da scuole statali e paritarie: mensa scolastica, gite, contributi volontari, rette, libri di testo, attività extracurricolari.
+            </Text>
+          </Stack>
+          <Stack gap={4} style={{ flex: 1, minWidth: 200 }}>
+            <Text style={{ fontWeight: 600, fontSize: 13 }}>Metodi di pagamento accettati</Text>
+            <Row gap={6} style={{ flexWrap: 'wrap' }}>
+              <Pill size="sm">Carta di credito</Pill>
+              <Pill size="sm">Carta di debito</Pill>
+              <Pill size="sm">Wallet PagoPA</Pill>
+              <Pill size="sm">Bonifico / CBILL</Pill>
+            </Row>
+          </Stack>
+        </Row>
+      </div>
+    </Stack>
+  )
+}
+
 // ─── MOBILE APP PREVIEW ───────────────────────────────────────────────────────
 const MOB = {
   bg: '#f4f5f7', raised: '#ffffff', elevated: '#f0f1f3',
@@ -2128,6 +2374,7 @@ const MOB = {
 function MobileScreen({ activeTab, setActiveTab }) {
   const tabs = [
     { id: 'home',     icon: '⊞', label: 'Home' },
+    { id: 'pay',      icon: '💳', label: 'Pagamenti' },
     { id: 'messages', icon: '💬', label: 'Messaggi', badge: MESSAGES_DATA.filter(m => !m.read).length },
     { id: 'enroll',   icon: '📋', label: 'Iscrizioni' },
     { id: 'profile',  icon: '👤', label: 'Profilo' },
@@ -2176,6 +2423,16 @@ function MobileScreen({ activeTab, setActiveTab }) {
                 </div>
               ))}
             </div>
+            {/* PagoPA shortcut */}
+            <div style={{ padding: '12px 14px', borderRadius: 10, background: 'rgba(0,102,204,0.06)', border: '1.5px solid rgba(0,102,204,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'flex', gap: 3, alignItems: 'center', marginBottom: 2 }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#0066cc' }}>pago</span><span style={{ fontSize: 12, fontWeight: 800, color: '#0066cc' }}>PA</span>
+                </div>
+                <div style={{ fontSize: 11, color: MOB.textSec }}>Hai un avviso da pagare?</div>
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#0066cc', background: 'rgba(0,102,204,0.1)', padding: '5px 10px', borderRadius: 7 }}>Paga ora</div>
+            </div>
             {/* Alert */}
             <div style={{ padding: '10px 12px', background: 'rgba(249,115,22,0.07)', borderLeft: `3px solid ${MOB.accent}`, borderRadius: 8, border: `1px solid ${MOB.accent}22` }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: MOB.accent }}>Firma mancante — Marco Rossi</div>
@@ -2190,6 +2447,42 @@ function MobileScreen({ activeTab, setActiveTab }) {
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 700, color: MOB.text }}>{p.a}</span>
                     {pill(p.s, p.s==='Completato'?MOB.success:MOB.warning, p.s==='Completato'?'rgba(22,163,74,0.1)':'rgba(217,119,6,0.1)')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'pay' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: MOB.text, letterSpacing: '-0.5px' }}>Pagamenti</div>
+            {/* PagoPA quick access */}
+            <div style={{ padding: '14px', borderRadius: 12, background: 'rgba(0,102,204,0.06)', border: '1.5px solid rgba(0,102,204,0.25)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0066cc' }}>pago</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: '#0066cc' }}>PA</span>
+                </div>
+                <div style={{ fontSize: 11, color: MOB.textSec }}>Paga un avviso scolastico</div>
+              </div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#0066cc', background: 'rgba(0,102,204,0.1)', padding: '6px 12px', borderRadius: 8 }}>Paga ora →</span>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {['Tutti','Marco','Sofia','Giulia'].map(f => (
+                <span key={f} style={{ fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 999, background: f==='Tutti'?MOB.accent:'transparent', color: f==='Tutti'?'#fff':MOB.textSec, border: `1px solid ${f==='Tutti'?MOB.accent:MOB.border}` }}>{f}</span>
+              ))}
+            </div>
+            <div style={{ background: MOB.raised, borderRadius: 12, border: `1px solid ${MOB.border}`, overflow: 'hidden' }}>
+              {PAYMENTS_DATA.slice(0,6).map((p,i) => (
+                <div key={p.id} style={{ padding: '12px 14px', borderBottom: i<5?`1px solid ${MOB.border}`:'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: MOB.text }}>{p.desc}</div>
+                    <div style={{ fontSize: 10, color: MOB.textSec, marginTop: 2 }}>{p.child} · {p.date}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: MOB.text }}>{p.amount}</div>
+                    {pill(p.status, p.status==='Completato'?MOB.success:MOB.warning, p.status==='Completato'?'rgba(22,163,74,0.1)':'rgba(217,119,6,0.1)')}
                   </div>
                 </div>
               ))}
@@ -2491,6 +2784,7 @@ export default function App() {
       case 'documents': return <ScreenDocuments goTo={setScreen} />
       case 'contracts': return <ScreenContracts goTo={setScreen} />
       case 'messages': return <ScreenMessages goTo={setScreen} />
+      case 'pagopa': return <ScreenPagoPA />
       case 'app-preview': return <ScreenAppPreview />
       default: return null
     }
@@ -2543,7 +2837,7 @@ export default function App() {
               ))}
               <span style={{ width: 1, height: 16, background: C.border, margin: '0 4px', flexShrink: 0 }} />
               <Text tone="tertiary" size="small" style={{ fontWeight: 600, letterSpacing: '0.4px', marginRight: 4, whiteSpace: 'nowrap' }}>APP</Text>
-              {['dashboard', 'child-detail', 'payments', 'orders', 'documents', 'contracts', 'messages', 'promotions', 'app-preview', 'enrollment', 'guest-success'].map(s => (
+              {['dashboard', 'child-detail', 'payments', 'orders', 'pagopa', 'documents', 'contracts', 'messages', 'promotions', 'app-preview', 'enrollment', 'guest-success'].map(s => (
                 <span key={s} style={{ position: 'relative', display: 'inline-flex' }}>
                   <Pill active={screen === s} onClick={() => setScreen(s)}>{SCREEN_LABELS[s]}</Pill>
                   {s === 'messages' && MESSAGES_DATA.filter(m => !m.read).length > 0 && (
