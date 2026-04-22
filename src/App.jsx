@@ -2243,7 +2243,7 @@ function ScreenPagoPA() {
         ))}
       </Stack>
 
-      <Alert type="info" title="Pagamento sicuro tramite circuito PagoPA" description="I pagamenti PagoPA sono gestiti da Mooney S.p.a., istituto di moneta elettronica autorizzato dalla Banca d'Italia. ScuolaPay non trattiene dati della carta." />
+      <Alert type="info" title="Pagamento sicuro tramite circuito PagoPA" description="I pagamenti PagoPA sono gestiti da Flowpay, istituto di pagamento autorizzato. ScuolaPay non trattiene dati della carta." />
 
       <Row gap={10} style={{ justifyContent: 'flex-end' }}>
         <Button variant="secondary" onClick={() => setStep(1)}>← Modifica dati</Button>
